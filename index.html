@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منظم مهامي الأنيق</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <style>
+        :root {
+            --bg-color: #f4ece1; /* بيج فاتح جداً */
+            --card-bg: #ffffff;
+            --primary-camel: #c49b66; /* لون جملي */
+            --dark-camel: #8d6e4a;
+            --text-color: #5d4037;
+            --accent-color: #eaddca;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Cairo', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 400px;
+            background: var(--card-bg);
+            border-radius: 30px;
+            padding: 30px 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+            height: fit-content;
+            border: 1px solid rgba(196, 155, 102, 0.2);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 24px;
+            margin: 0;
+            color: var(--dark-camel);
+            font-weight: 700;
+        }
+
+        header p {
+            font-size: 14px;
+            color: #a08d86;
+            margin-top: 5px;
+        }
+
+        .input-group {
+            display: flex;
+            background: var(--bg-color);
+            padding: 8px;
+            border-radius: 20px;
+            margin-bottom: 25px;
+            transition: 0.3s;
+        }
+
+        .input-group:focus-within {
+            box-shadow: 0 0 0 2px var(--primary-camel);
+        }
+
+        input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            padding: 12px 15px;
+            font-family: 'Cairo';
+            font-size: 16px;
+            outline: none;
+            color: var(--text-color);
+        }
+
+        .add-btn {
+            background: var(--primary-camel);
+            color: white;
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .add-btn:active {
+            transform: scale(0.9);
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        li {
+            background: #fff;
+            border: 1px solid var(--accent-color);
+            padding: 15px;
+            border-radius: 18px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            animation: slideIn 0.3s ease-out forwards;
+            transition: 0.3s;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        li.completed {
+            background: #f9f9f9;
+            border-color: #eee;
+        }
+
+        li.completed span {
+            text-decoration: line-through;
+            color: #b0a49e;
+        }
+
+        .task-text {
+            flex: 1;
+            font-size: 16px;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+
+        .delete-btn {
+            color: #e57373;
+            padding: 8px;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: 0.2s;
+        }
+
+        .delete-btn:hover {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        .stats {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid var(--accent-color);
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: var(--dark-camel);
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <header>
+        <h1><i class="fa-solid fa-feather-pointed"></i> مهامي اليومية</h1>
+        <p id="date-display"></p>
+    </header>
+
+    <div class="input-group">
+        <input type="text" id="taskInput" placeholder="أضف مهمة جديدة..." onkeypress="if(event.key === 'Enter') addTask()">
+        <button class="add-btn" onclick="addTask()">
+            <i class="fa-solid fa-plus"></i>
+        </button>
+    </div>
+
+    <ul id="taskList"></ul>
+
+    <div class="stats">
+        <span id="taskCount">0 مهام متبقية</span>
+        <span onclick="clearAll()" style="cursor:pointer; text-decoration: underline;">مسح الكل</span>
+    </div>
+</div>
+
+<script>
+    let tasks = JSON.parse(localStorage.getItem("camelTasks")) || [];
+
+    // تحديث التاريخ
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    document.getElementById('date-display').innerText = new Date().toLocaleDateString('ar-EG', options);
+
+    function saveAndRender() {
+        localStorage.setItem("camelTasks", JSON.stringify(tasks));
+        render();
+    }
+
+    function render() {
+        const list = document.getElementById("taskList");
+        list.innerHTML = "";
+        
+        tasks.forEach((task, index) => {
+            const li = document.createElement("li");
+            if(task.done) li.classList.add("completed");
+
+            li.innerHTML = `
+                <div class="task-text" onclick="toggleTask(${index})">
+                    <i class="fa-regular ${task.done ? 'fa-circle-check' : 'fa-circle'}"></i>
+                    <span>${task.text}</span>
+                </div>
+                <i class="fa-solid fa-trash-can delete-btn" onclick="deleteTask(${index})"></i>
+            `;
+            list.appendChild(li);
+        });
+
+        const activeTasks = tasks.filter(t => !t.done).length;
+        document.getElementById("taskCount").innerText = `${activeTasks} مهام متبقية`;
+    }
+
+    function addTask() {
+        const input = document.getElementById("taskInput");
+        if(input.value.trim() === "") return;
+        tasks.push({ text: input.value, done: false });
+        input.value = "";
+        saveAndRender();
+    }
+
+    function toggleTask(index) {
+        tasks[index].done = !tasks[index].done;
+        saveAndRender();
+    }
+
+    function deleteTask(index) {
+        tasks.splice(index, 1);
+        saveAndRender();
+    }
+
+    function clearAll() {
+        if(confirm("هل تريد مسح جميع المهام؟")) {
+            tasks = [];
+            saveAndRender();
+        }
+    }
+
+    render();
+</script>
+
+</body>
+</html>
