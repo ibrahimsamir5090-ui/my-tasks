@@ -1,502 +1,1267 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Terminal</title>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap');
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>مدير الملفات - الإصدار الكامل</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+        }
+        body {
+            background: #0d1117;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 16px;
+        }
+        .app-container {
+            width: 1400px;
+            max-width: 100%;
+            height: 94vh;
+            background: #161b22;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid #30363d;
+        }
 
-* { margin:0; padding:0; box-sizing:border-box; }
+        /* شريط الأدوات */
+        .toolbar {
+            padding: 10px 18px;
+            background: #0d1117;
+            border-bottom: 1px solid #30363d;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .toolbar-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .toolbar-left h1 {
+            color: #f0f6fc;
+            font-size: 17px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .toolbar-left h1 i {
+            color: #58a6ff;
+        }
+        .search-box {
+            background: #21262d;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 5px 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #8b949e;
+            width: 200px;
+            transition: 0.3s;
+        }
+        .search-box:focus-within {
+            border-color: #58a6ff;
+            box-shadow: 0 0 0 3px #1f6feb33;
+        }
+        .search-box input {
+            background: transparent;
+            border: none;
+            color: #c9d1d9;
+            outline: none;
+            width: 100%;
+            font-size: 12px;
+            padding: 3px 0;
+        }
+        .search-box input::placeholder {
+            color: #484f58;
+        }
+        .actions {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            background: #21262d;
+            border: 1px solid #30363d;
+            color: #c9d1d9;
+            padding: 5px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            transition: 0.2s;
+            white-space: nowrap;
+        }
+        .btn:hover {
+            background: #30363d;
+            border-color: #58a6ff;
+            color: #f0f6fc;
+        }
+        .btn-primary {
+            background: #238636;
+            border-color: #2ea043;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #2ea043;
+        }
+        .btn-danger {
+            background: #da3633;
+            border-color: #f85149;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #f85149;
+        }
+        .btn-outline {
+            background: transparent;
+            border-color: #30363d;
+        }
+        .btn-upload {
+            background: #1f6feb;
+            border-color: #388bfd;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-upload:hover {
+            background: #388bfd;
+        }
+        .btn-upload input[type="file"] {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
 
-:root {
-  --bg:      #1c1c1e;
-  --bg2:     #2a2a2c;
-  --border:  #3a3a3c;
-  --text:    #e8e8e8;
-  --dim:     #888;
-  --prompt:  #5ac8fa;
-  --cmd:     #ffffff;
-  --out:     #d4d4d4;
-  --green:   #34c759;
-  --yellow:  #ffd60a;
-  --red:     #ff453a;
-  --cyan:    #64d2ff;
-  --purple:  #bf5af2;
-}
+        /* التخطيط الرئيسي */
+        .main-layout {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
 
-html, body {
-  height: 100%;
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'JetBrains Mono', 'Courier New', monospace;
-  font-size: 13.5px;
-  line-height: 1.6;
-}
+        /* الشريط الجانبي */
+        .sidebar {
+            width: 270px;
+            background: #0d1117;
+            border-left: 1px solid #30363d;
+            padding: 8px 6px;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 3px 6px 10px 6px;
+            color: #8b949e;
+            font-size: 12px;
+            font-weight: 600;
+            border-bottom: 1px solid #21262d;
+            margin-bottom: 8px;
+        }
+        .tree {
+            list-style: none;
+            padding-right: 0;
+        }
+        .tree li {
+            padding: 1px 0;
+        }
+        .tree-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            cursor: grab;
+            color: #c9d1d9;
+            font-size: 13px;
+            transition: 0.15s;
+            position: relative;
+            border: 1px solid transparent;
+        }
+        .tree-item:hover {
+            background: #21262d;
+        }
+        .tree-item.active {
+            background: #1f2937;
+            color: #58a6ff;
+            font-weight: 500;
+        }
+        .tree-item .folder-icon {
+            color: #58a6ff;
+            font-size: 14px;
+        }
+        .tree-item .chevron {
+            margin-right: auto;
+            color: #8b949e;
+            font-size: 10px;
+            transition: 0.2s;
+        }
+        .tree-item .chevron.open {
+            transform: rotate(90deg);
+        }
+        .tree-children {
+            padding-right: 18px;
+            list-style: none;
+            display: none;
+        }
+        .tree-children.open {
+            display: block;
+        }
+        .tree-item .badge {
+            background: #21262d;
+            padding: 0 7px;
+            border-radius: 20px;
+            font-size: 10px;
+            color: #8b949e;
+            margin-right: auto;
+        }
+        .tree-item .item-actions {
+            display: none;
+            gap: 4px;
+            margin-right: 4px;
+        }
+        .tree-item:hover .item-actions {
+            display: flex;
+        }
+        .tree-item .item-actions button {
+            background: transparent;
+            border: none;
+            color: #8b949e;
+            cursor: pointer;
+            font-size: 11px;
+            padding: 0 3px;
+        }
+        .tree-item .item-actions button:hover {
+            color: #f0f6fc;
+        }
 
-/* ── Tab bar ─────────────────────────── */
-#tabbar {
-  background: #111113;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  padding: 0 12px;
-  height: 38px;
-  gap: 2px;
-  user-select: none;
-}
+        /* لوحة الملفات */
+        .file-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #0d1117;
+            padding: 10px 14px;
+            overflow: hidden;
+        }
+        .file-panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .file-panel-header h2 {
+            color: #f0f6fc;
+            font-size: 15px;
+            font-weight: 400;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .file-panel-header h2 i {
+            color: #58a6ff;
+        }
+        .file-table-wrap {
+            flex: 1;
+            overflow-y: auto;
+            border: 1px solid #21262d;
+            border-radius: 10px;
+            background: #161b22;
+            min-height: 120px;
+        }
+        .file-table {
+            width: 100%;
+            border-collapse: collapse;
+            color: #c9d1d9;
+            font-size: 13px;
+        }
+        .file-table th {
+            text-align: right;
+            padding: 8px 12px;
+            background: #0d1117;
+            color: #8b949e;
+            font-weight: 500;
+            border-bottom: 1px solid #21262d;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+        }
+        .file-table td {
+            padding: 6px 12px;
+            border-bottom: 1px solid #21262d;
+            cursor: pointer;
+            transition: 0.1s;
+        }
+        .file-table tr:hover td {
+            background: #1c2128;
+        }
+        .file-table tr.active td {
+            background: #1f2937;
+        }
+        .file-table .file-name {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .file-table .file-name i {
+            color: #8b949e;
+        }
+        .file-table .file-name .ext-icon {
+            color: #58a6ff;
+        }
+        .file-table .size {
+            color: #8b949e;
+            font-size: 12px;
+        }
+        .file-table .date {
+            color: #8b949e;
+            font-size: 12px;
+        }
+        .file-table .file-actions {
+            display: none;
+            gap: 4px;
+        }
+        .file-table tr:hover .file-actions {
+            display: flex;
+        }
+        .file-table .file-actions button {
+            background: transparent;
+            border: none;
+            color: #8b949e;
+            cursor: pointer;
+            font-size: 12px;
+            padding: 0 4px;
+        }
+        .file-table .file-actions button:hover {
+            color: #f0f6fc;
+        }
 
-.tab {
-  padding: 4px 14px;
-  border-radius: 6px 6px 0 0;
-  font-size: 12px;
-  color: var(--dim);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  border: 1px solid transparent;
-  border-bottom: none;
-  transition: background .15s;
-}
+        /* محرر / معاينة */
+        .editor-area {
+            background: #0d1117;
+            border: 1px solid #21262d;
+            border-radius: 10px;
+            margin-top: 8px;
+            height: 180px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .editor-area .editor-header {
+            background: #161b22;
+            padding: 5px 12px;
+            border-bottom: 1px solid #21262d;
+            display: flex;
+            justify-content: space-between;
+            color: #8b949e;
+            font-size: 12px;
+        }
+        .editor-area textarea {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #e6edf3;
+            font-size: 13px;
+            resize: none;
+            outline: none;
+            padding: 10px 14px;
+            font-family: 'Fira Code', 'Cascadia Code', monospace;
+            line-height: 1.7;
+            display: none;
+        }
+        .editor-area .preview-image {
+            flex: 1;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+            background: #0d1117;
+        }
+        .editor-area .preview-image img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            border-radius: 6px;
+        }
+        .empty-state {
+            color: #484f58;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            gap: 3px;
+            font-size: 13px;
+        }
+        .empty-state i {
+            font-size: 28px;
+            opacity: 0.3;
+        }
 
-.tab.active {
-  background: var(--bg2);
-  color: var(--text);
-  border-color: var(--border);
-}
+        /* شريط الحالة */
+        .status-bar {
+            padding: 5px 18px;
+            background: #0d1117;
+            border-top: 1px solid #21262d;
+            color: #8b949e;
+            font-size: 11px;
+            display: flex;
+            justify-content: space-between;
+        }
 
-.tab .close {
-  font-size: 10px;
-  color: var(--dim);
-  line-height: 1;
-}
+        /* مودال إعادة التسمية */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 999;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal-box {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 16px;
+            padding: 28px 32px;
+            width: 400px;
+            max-width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+        }
+        .modal-box h3 {
+            color: #f0f6fc;
+            margin-bottom: 16px;
+            font-weight: 500;
+        }
+        .modal-box input {
+            width: 100%;
+            padding: 10px 14px;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            color: #c9d1d9;
+            font-size: 14px;
+            outline: none;
+        }
+        .modal-box input:focus {
+            border-color: #58a6ff;
+        }
+        .modal-box .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 18px;
+            justify-content: flex-end;
+        }
+        .modal-box .modal-actions button {
+            padding: 8px 20px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .modal-box .modal-actions .btn-confirm {
+            background: #238636;
+            color: white;
+        }
+        .modal-box .modal-actions .btn-confirm:hover {
+            background: #2ea043;
+        }
+        .modal-box .modal-actions .btn-cancel {
+            background: #21262d;
+            color: #c9d1d9;
+        }
+        .modal-box .modal-actions .btn-cancel:hover {
+            background: #30363d;
+        }
 
-.tab-add {
-  margin-left: 4px;
-  color: var(--dim);
-  cursor: pointer;
-  font-size: 16px;
-  padding: 0 6px;
-}
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: #0d1117; }
+        ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 10px; }
 
-.spacer { flex: 1; }
-
-#topright {
-  font-size: 11px;
-  color: var(--dim);
-  letter-spacing: .5px;
-}
-
-/* ── Terminal output ─────────────────── */
-#terminal {
-  height: calc(100vh - 38px - 44px);
-  overflow-y: auto;
-  padding: 12px 16px 4px;
-}
-
-#terminal::-webkit-scrollbar { width: 5px; }
-#terminal::-webkit-scrollbar-track { background: transparent; }
-#terminal::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
-
-.line {
-  white-space: pre-wrap;
-  word-break: break-all;
-  padding: 0;
-  animation: appear .08s ease;
-}
-
-@keyframes appear {
-  from { opacity:0; }
-  to   { opacity:1; }
-}
-
-.line-cmd  { color: var(--cmd); }
-.line-out  { color: var(--out); }
-.line-ok   { color: var(--green); }
-.line-err  { color: var(--red); }
-.line-info { color: var(--cyan); }
-.line-warn { color: var(--yellow); }
-.line-dim  { color: var(--dim); }
-
-.ps1-user  { color: var(--green); font-weight:600; }
-.ps1-host  { color: var(--green); }
-.ps1-sep   { color: var(--dim); }
-.ps1-path  { color: var(--cyan); }
-.ps1-dol   { color: var(--purple); }
-
-/* ── Input row ───────────────────────── */
-#inputbar {
-  height: 44px;
-  background: var(--bg2);
-  border-top: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  padding: 0 16px;
-  gap: 8px;
-}
-
-#ps1 {
-  white-space: nowrap;
-  flex-shrink: 0;
-  font-size: 13.5px;
-}
-
-#cmd {
-  flex: 1;
-  background: transparent;
-  border: none;
-  outline: none;
-  color: var(--cmd);
-  font-family: inherit;
-  font-size: 13.5px;
-  caret-color: var(--purple);
-}
-
-#cmd::selection { background: #5a4fff55; }
-</style>
+        @media (max-width: 768px) {
+            .sidebar { width: 180px; }
+            .search-box { width: 130px; }
+        }
+    </style>
 </head>
 <body>
 
-<!-- Tab bar -->
-<div id="tabbar">
-  <div class="tab active">
-    <span>bash</span>
-    <span class="close">✕</span>
-  </div>
-  <div class="tab-add">+</div>
-  <div class="spacer"></div>
-  <div id="topright" id="clock">--:--:--</div>
+<div class="app-container">
+    <!-- شريط الأدوات -->
+    <div class="toolbar">
+        <div class="toolbar-left">
+            <h1><i>📂</i> مدير الملفات</h1>
+            <div class="search-box">
+                <span>🔍</span>
+                <input type="text" id="searchInput" placeholder="بحث..." />
+            </div>
+        </div>
+        <div class="actions">
+            <button class="btn btn-primary" id="addFolderBtn">📁 مجلد</button>
+            <button class="btn" id="addFileBtn">📄 ملف</button>
+            <button class="btn btn-upload">📤 رفع ملف<input type="file" id="uploadInput" multiple /></button>
+            <button class="btn btn-danger" id="deleteBtn">🗑️ حذف</button>
+            <button class="btn btn-outline" id="refreshBtn">🔄</button>
+        </div>
+    </div>
+
+    <div class="main-layout">
+        <!-- الشريط الجانبي -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <span>📂 المستكشف</span>
+                <span id="folderCountSide">0</span>
+            </div>
+            <ul class="tree" id="treeContainer"></ul>
+        </div>
+
+        <!-- لوحة الملفات -->
+        <div class="file-panel">
+            <div class="file-panel-header">
+                <h2><i>📄</i> <span id="currentPathLabel">الملفات</span></h2>
+                <span style="color:#8b949e; font-size:12px;" id="fileCountLabel">0 ملف</span>
+            </div>
+
+            <div class="file-table-wrap">
+                <table class="file-table" id="fileTable">
+                    <thead>
+                        <tr>
+                            <th style="width:45%;">الاسم</th>
+                            <th style="width:18%;">الحجم</th>
+                            <th style="width:27%;">تاريخ التعديل</th>
+                            <th style="width:10%;">إجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="fileTableBody"></tbody>
+                </table>
+            </div>
+
+            <!-- محرر / معاينة -->
+            <div class="editor-area">
+                <div class="editor-header">
+                    <span id="editorFileName">📄 محرر</span>
+                    <span id="editorStatus">✏️ جاهز</span>
+                </div>
+                <textarea id="editor" placeholder="اختر ملفاً للتحرير..."></textarea>
+                <div class="preview-image" id="previewImage">
+                    <img id="previewImg" src="" alt="معاينة الصورة" />
+                </div>
+                <div class="empty-state" id="emptyEditorMsg">
+                    <i>📝</i>
+                    <span>لا يوجد ملف مفتوح</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="status-bar">
+        <span id="statusLeft">✅ جاهز</span>
+        <span id="statusRight">📂 بدون مجلد</span>
+    </div>
 </div>
 
-<!-- Output -->
-<div id="terminal"></div>
-
-<!-- Input -->
-<div id="inputbar">
-  <span id="ps1"></span>
-  <input id="cmd" type="text" autocomplete="off" spellcheck="false">
+<!-- مودال إعادة التسمية -->
+<div class="modal-overlay" id="renameModal">
+    <div class="modal-box">
+        <h3 id="renameTitle">إعادة تسمية</h3>
+        <input type="text" id="renameInput" placeholder="الاسم الجديد..." />
+        <div class="modal-actions">
+            <button class="btn-cancel" id="renameCancel">إلغاء</button>
+            <button class="btn-confirm" id="renameConfirm">تأكيد</button>
+        </div>
+    </div>
 </div>
 
 <script>
-const termEl  = document.getElementById('terminal');
-const cmdEl   = document.getElementById('cmd');
-const ps1El   = document.getElementById('ps1');
-const clockEl = document.getElementById('topright');
+    (function() {
+        "use strict";
 
-// ── State ───────────────────────────────────
-const STATE = {
-  user: 'user',
-  host: 'localhost',
-  cwd:  '~',
-  hist: [],
-  hIdx: -1,
-  start: Date.now(),
-};
+        // ---------- البيانات ----------
+        let root = {
+            id: 'root',
+            name: 'الجذر',
+            type: 'folder',
+            children: [
+                {
+                    id: 'f1',
+                    name: 'مشروع ويب',
+                    type: 'folder',
+                    children: [
+                        { id: 'f1-1', name: 'index.html', type: 'file', content: '<h1>مرحباً بالعالم</h1>', size: '120 B', modified: '2026-06-17 14:30' },
+                        { id: 'f1-2', name: 'style.css', type: 'file', content: 'body { background: #0d1117; }', size: '45 B', modified: '2026-06-17 14:25' },
+                        { id: 'f1-3', name: 'app.js', type: 'file', content: 'console.log("Hello!");', size: '32 B', modified: '2026-06-17 14:20' }
+                    ]
+                },
+                {
+                    id: 'f2',
+                    name: 'ملاحظات',
+                    type: 'folder',
+                    children: [
+                        { id: 'f2-1', name: 'مذكرة.txt', type: 'file', content: 'أفكار جديدة...', size: '18 B', modified: '2026-06-17 13:10' },
+                        { id: 'f2-2', name: 'قائمة مهام.md', type: 'file', content: '- مهمة 1\n- مهمة 2', size: '24 B', modified: '2026-06-17 12:45' }
+                    ]
+                },
+                {
+                    id: 'f3',
+                    name: 'صور',
+                    type: 'folder',
+                    children: []
+                }
+            ]
+        };
 
-// ── Clock ───────────────────────────────────
-(function tick() {
-  const n = new Date();
-  const p = v => String(v).padStart(2,'0');
-  clockEl.textContent = `${p(n.getHours())}:${p(n.getMinutes())}:${p(n.getSeconds())}`;
-  setTimeout(tick, 1000);
-})();
+        let nextId = 1000;
+        let currentFolder = root;
+        let activeFile = null;
+        let searchQuery = '';
+        let renameTarget = null; // { type: 'file'|'folder', node: ... }
 
-// ── Render PS1 ──────────────────────────────
-function renderPS1() {
-  ps1El.innerHTML =
-    `<span class="ps1-user">${esc(STATE.user)}</span>` +
-    `<span class="ps1-sep">@</span>` +
-    `<span class="ps1-host">${esc(STATE.host)}</span>` +
-    `<span class="ps1-sep">:</span>` +
-    `<span class="ps1-path">${esc(STATE.cwd)}</span>` +
-    `<span class="ps1-dol"> $ </span>`;
-}
-renderPS1();
+        // DOM
+        const treeContainer = document.getElementById('treeContainer');
+        const fileTableBody = document.getElementById('fileTableBody');
+        const editor = document.getElementById('editor');
+        const previewImage = document.getElementById('previewImage');
+        const previewImg = document.getElementById('previewImg');
+        const emptyEditorMsg = document.getElementById('emptyEditorMsg');
+        const editorFileName = document.getElementById('editorFileName');
+        const editorStatus = document.getElementById('editorStatus');
+        const currentPathLabel = document.getElementById('currentPathLabel');
+        const fileCountLabel = document.getElementById('fileCountLabel');
+        const folderCountSide = document.getElementById('folderCountSide');
+        const statusLeft = document.getElementById('statusLeft');
+        const statusRight = document.getElementById('statusRight');
+        const searchInput = document.getElementById('searchInput');
+        const renameModal = document.getElementById('renameModal');
+        const renameInput = document.getElementById('renameInput');
+        const renameTitle = document.getElementById('renameTitle');
 
-// ── Print ───────────────────────────────────
-function print(text, cls='line-out') {
-  const d = document.createElement('div');
-  d.className = 'line ' + cls;
-  d.textContent = text;
-  termEl.appendChild(d);
-  termEl.scrollTop = termEl.scrollHeight;
-}
+        const addFolderBtn = document.getElementById('addFolderBtn');
+        const addFileBtn = document.getElementById('addFileBtn');
+        const deleteBtn = document.getElementById('deleteBtn');
+        const refreshBtn = document.getElementById('refreshBtn');
+        const uploadInput = document.getElementById('uploadInput');
+        const renameCancel = document.getElementById('renameCancel');
+        const renameConfirm = document.getElementById('renameConfirm');
 
-function printHTML(html, cls='line-out') {
-  const d = document.createElement('div');
-  d.className = 'line ' + cls;
-  d.innerHTML = html;
-  termEl.appendChild(d);
-  termEl.scrollTop = termEl.scrollHeight;
-}
+        // ---------- مساعدات ----------
+        function findNodeById(node, id) {
+            if (node.id === id) return node;
+            if (node.type === 'folder' && node.children) {
+                for (let child of node.children) {
+                    const found = findNodeById(child, id);
+                    if (found) return found;
+                }
+            }
+            return null;
+        }
 
-function br() { print(''); }
+        function getParent(node, rootNode) {
+            if (rootNode.type === 'folder') {
+                for (let child of (rootNode.children || [])) {
+                    if (child === node) return rootNode;
+                    const found = getParent(node, child);
+                    if (found) return found;
+                }
+            }
+            return null;
+        }
 
-function esc(s) {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
+        function genId() { return 'n' + (nextId++); }
+        function now() {
+            const d = new Date();
+            return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0') + ' ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+        }
+        function fakeSize(content) {
+            return (content.length * 0.8).toFixed(0) + ' B';
+        }
+        function formatSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
+            return (bytes/(1024*1024)).toFixed(1) + ' MB';
+        }
 
-// ── Echo typed command ──────────────────────
-function echoCmd(raw) {
-  printHTML(
-    `<span class="ps1-user">${esc(STATE.user)}</span>` +
-    `<span class="ps1-sep">@</span>` +
-    `<span class="ps1-host">${esc(STATE.host)}</span>` +
-    `<span class="ps1-sep">:</span>` +
-    `<span class="ps1-path">${esc(STATE.cwd)}</span>` +
-    `<span class="ps1-dol"> $ </span>` +
-    `<span class="ps1-cmd">${esc(raw)}</span>`,
-    'line-cmd'
-  );
-}
+        function isImageFile(file) {
+            const ext = file.name.split('.').pop().toLowerCase();
+            return ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'ico'].includes(ext);
+        }
 
-// ── Commands ────────────────────────────────
-const CMDS = {
+        function isTextFile(file) {
+            const ext = file.name.split('.').pop().toLowerCase();
+            return ['txt', 'html', 'htm', 'css', 'js', 'json', 'md', 'xml', 'csv', 'log', 'py', 'java', 'c', 'cpp', 'php', 'rb', 'go', 'rs'].includes(ext);
+        }
 
-  help(_) {
-    const rows = [
-      ['help',      'عرض قائمة الأوامر'],
-      ['clear',     'مسح الشاشة  (أو Ctrl+L)'],
-      ['echo',      'طباعة نص  →  echo hello world'],
-      ['date',      'الوقت والتاريخ'],
-      ['whoami',    'المستخدم الحالي'],
-      ['hostname',  'اسم الجهاز'],
-      ['uptime',    'مدة الجلسة'],
-      ['pwd',       'المسار الحالي'],
-      ['cd',        'تغيير المجلد  →  cd /sdcard'],
-      ['ls',        'محتوى المجلد (محاكاة)'],
-      ['env',       'متغيرات البيئة'],
-      ['history',   'سجل الأوامر'],
-      ['calc',      'حاسبة  →  calc 2**10 / 4'],
-      ['ping',      'ping محاكاة  →  ping google.com'],
-      ['neofetch',  'معلومات النظام'],
-      ['exit',      'إغلاق الجلسة'],
-    ];
-    br();
-    for (const [c, d] of rows) {
-      printHTML(
-        `<span style="color:var(--cyan);display:inline-block;width:100px">${esc(c)}</span>` +
-        `<span style="color:var(--dim)">  ${esc(d)}</span>`
-      );
-    }
-    br();
-  },
+        // ---------- البحث ----------
+        function filterFiles(files) {
+            if (!searchQuery.trim()) return files;
+            const q = searchQuery.trim().toLowerCase();
+            return files.filter(f => f.name.toLowerCase().includes(q));
+        }
 
-  clear(_) { termEl.innerHTML = ''; },
+        // ---------- عرض الشجرة ----------
+        function renderTree() {
+            treeContainer.innerHTML = '';
+            if (root.children && root.children.length > 0) {
+                root.children.forEach(child => {
+                    if (child.type === 'folder') {
+                        const li = createTreeItem(child, 0);
+                        treeContainer.appendChild(li);
+                    }
+                });
+            } else {
+                const empty = document.createElement('li');
+                empty.style.color = '#484f58';
+                empty.style.padding = '12px 10px';
+                empty.textContent = '📭 لا توجد مجلدات';
+                treeContainer.appendChild(empty);
+            }
+            folderCountSide.textContent = countFolders(root);
+        }
 
-  echo(args) { print(args.join(' ')); },
+        function createTreeItem(node, level) {
+            const li = document.createElement('li');
+            const div = document.createElement('div');
+            div.className = `tree-item ${node === currentFolder ? 'active' : ''}`;
+            div.style.paddingRight = (level * 16 + 6) + 'px';
+            div.draggable = true;
 
-  date(_) {
-    const n = new Date();
-    print(n.toString());
-  },
+            const iconSpan = document.createElement('span');
+            iconSpan.className = 'folder-icon';
+            iconSpan.textContent = '📁';
+            div.appendChild(iconSpan);
 
-  whoami(_) { print(STATE.user); },
+            const nameSpan = document.createElement('span');
+            nameSpan.textContent = node.name;
+            div.appendChild(nameSpan);
 
-  hostname(_) { print(STATE.host); },
+            const count = (node.children || []).filter(c => c.type === 'file').length;
+            const badge = document.createElement('span');
+            badge.className = 'badge';
+            badge.textContent = count;
+            div.appendChild(badge);
 
-  pwd(_) { print(STATE.cwd === '~' ? '/data/data/com.termux/files/home' : STATE.cwd); },
+            // أزرار الإجراءات
+            const actions = document.createElement('span');
+            actions.className = 'item-actions';
+            const renameBtn = document.createElement('button');
+            renameBtn.textContent = '✏️';
+            renameBtn.title = 'إعادة تسمية';
+            renameBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                openRenameModal('folder', node);
+            });
+            actions.appendChild(renameBtn);
+            div.appendChild(actions);
 
-  uptime(_) {
-    const s = Math.floor((Date.now() - STATE.start) / 1000);
-    const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = s%60;
-    print(`up ${h}h ${m}m ${sec}s`);
-  },
+            const chevron = document.createElement('span');
+            chevron.className = 'chevron';
+            chevron.textContent = '▶';
+            div.appendChild(chevron);
 
-  cd(args) {
-    const path = args[0] || '~';
-    STATE.cwd = path;
-    renderPS1();
-  },
+            const childUl = document.createElement('ul');
+            childUl.className = 'tree-children';
+            if (node.children && node.children.length > 0) {
+                node.children.forEach(child => {
+                    if (child.type === 'folder') {
+                        const childLi = createTreeItem(child, level + 1);
+                        childUl.appendChild(childLi);
+                    }
+                });
+                if (isAncestorOrSelf(node, currentFolder)) {
+                    childUl.classList.add('open');
+                    chevron.classList.add('open');
+                }
+            } else {
+                const emptyMsg = document.createElement('li');
+                emptyMsg.style.color = '#484f58';
+                emptyMsg.style.padding = '4px 10px';
+                emptyMsg.style.fontSize = '11px';
+                emptyMsg.textContent = '📭 فارغ';
+                childUl.appendChild(emptyMsg);
+            }
 
-  ls(args) {
-    const files = [
-      { n: 'bot/',       c: 'var(--cyan)'   },
-      { n: 'node_modules/', c: 'var(--cyan)' },
-      { n: 'index.js',   c: 'var(--out)'    },
-      { n: 'package.json', c: 'var(--out)'  },
-      { n: '.env',       c: 'var(--yellow)' },
-      { n: 'README.md',  c: 'var(--out)'    },
-    ];
-    br();
-    printHTML(
-      files.map(f =>
-        `<span style="color:${f.c};margin-right:20px">${f.n}</span>`
-      ).join(''),
-      'line-out'
-    );
-    br();
-  },
+            // Drag & Drop
+            div.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('text/plain', JSON.stringify({ type: 'folder', id: node.id }));
+                div.classList.add('dragging');
+            });
+            div.addEventListener('dragend', () => div.classList.remove('dragging'));
+            div.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                div.classList.add('drag-over');
+            });
+            div.addEventListener('dragleave', () => div.classList.remove('drag-over'));
+            div.addEventListener('drop', (e) => {
+                e.preventDefault();
+                div.classList.remove('drag-over');
+                const raw = e.dataTransfer.getData('text/plain');
+                if (!raw) return;
+                try {
+                    const data = JSON.parse(raw);
+                    if (data.type === 'folder' && data.id !== node.id) {
+                        const draggedNode = findNodeById(root, data.id);
+                        if (draggedNode && draggedNode.type === 'folder') {
+                            if (isAncestorOrSelf(draggedNode, node)) return;
+                            const parent = getParent(draggedNode, root);
+                            if (parent) {
+                                parent.children = parent.children.filter(c => c.id !== draggedNode.id);
+                                if (!node.children) node.children = [];
+                                node.children.push(draggedNode);
+                                renderAll();
+                            }
+                        }
+                    }
+                } catch (err) {}
+            });
 
-  env(_) {
-    const vars = [
-      ['HOME',    '/data/data/com.termux/files/home'],
-      ['SHELL',   '/data/data/com.termux/files/usr/bin/bash'],
-      ['TERM',    'xterm-256color'],
-      ['LANG',    'en_US.UTF-8'],
-      ['PATH',    '/data/data/com.termux/files/usr/bin:/usr/bin:/bin'],
-      ['NODE_ENV','development'],
-    ];
-    br();
-    for (const [k,v] of vars) {
-      printHTML(
-        `<span style="color:var(--green)">${k}</span>` +
-        `<span style="color:var(--dim)">=</span>` +
-        `<span style="color:var(--out)">${v}</span>`
-      );
-    }
-    br();
-  },
+            div.addEventListener('click', (e) => {
+                e.stopPropagation();
+                currentFolder = node;
+                activeFile = null;
+                searchQuery = '';
+                searchInput.value = '';
+                renderAll();
+            });
 
-  history(_) {
-    br();
-    STATE.hist.forEach((h,i) => {
-      printHTML(
-        `<span style="color:var(--dim);display:inline-block;width:40px;text-align:right">${i+1}</span>` +
-        `<span style="color:var(--out)">  ${esc(h)}</span>`
-      );
-    });
-    br();
-  },
+            li.appendChild(div);
+            li.appendChild(childUl);
+            return li;
+        }
 
-  calc(args) {
-    const expr = args.join(' ');
-    if (!expr) { print('calc: missing expression', 'line-err'); return; }
-    try {
-      const safe = expr.replace(/[^0-9+\-*/%().\s*]/g,'');
-      const res = Function('"use strict";return(' + safe + ')')();
-      print(String(res));
-    } catch {
-      print('calc: invalid expression', 'line-err');
-    }
-  },
+        function isAncestorOrSelf(ancestor, node) {
+            if (ancestor === node) return true;
+            if (node.type === 'folder' && node.children) {
+                for (let child of node.children) {
+                    if (isAncestorOrSelf(ancestor, child)) return true;
+                }
+            }
+            return false;
+        }
 
-  async ping(args) {
-    const host = args[0] || 'localhost';
-    print(`PING ${host}: 56 data bytes`);
-    for (let i = 1; i <= 4; i++) {
-      await delay(350);
-      const ms = (Math.random()*30+5).toFixed(3);
-      print(`64 bytes from ${host}: icmp_seq=${i} ttl=64 time=${ms} ms`, 'line-ok');
-    }
-    print('');
-    print(`--- ${host} ping statistics ---`);
-    print('4 packets transmitted, 4 received, 0% packet loss');
-  },
+        function countFolders(node) {
+            let count = 0;
+            if (node.type === 'folder') {
+                count++;
+                if (node.children) {
+                    for (let child of node.children) {
+                        count += countFolders(child);
+                    }
+                }
+            }
+            return count;
+        }
 
-  neofetch(_) {
-    br();
-    const lines = [
-      ['OS',      'Android (Termux)'],
-      ['Shell',   'bash 5.2.15'],
-      ['Node',    'v20.11.0'],
-      ['npm',     '10.2.4'],
-      ['Memory',  '512MB / 4GB'],
-      ['Uptime',  (() => {
-        const s = Math.floor((Date.now()-STATE.start)/1000);
-        return `${Math.floor(s/60)}m ${s%60}s`;
-      })()],
-    ];
-    const logo = [
-      '  ████████ ',
-      '  ██    ██ ',
-      '  ████████ ',
-      '  ██    ██ ',
-      '  ████████ ',
-    ];
-    lines.forEach((row, i) => {
-      const lpart = `<span style="color:var(--green)">${logo[i] || '           '}</span>`;
-      const rpart = `<span style="color:var(--cyan)">${row[0]}</span>` +
-                    `<span style="color:var(--dim)">: </span>` +
-                    `<span style="color:var(--out)">${row[1]}</span>`;
-      printHTML(lpart + '  ' + rpart);
-    });
-    br();
-  },
+        // ---------- عرض جدول الملفات ----------
+        function renderFiles() {
+            const allFiles = (currentFolder.children || []).filter(c => c.type === 'file');
+            const files = filterFiles(allFiles);
+            fileTableBody.innerHTML = '';
+            if (files.length === 0) {
+                const tr = document.createElement('tr');
+                const td = document.createElement('td');
+                td.colSpan = 4;
+                td.style.color = '#484f58';
+                td.style.textAlign = 'center';
+                td.style.padding = '30px 0';
+                td.textContent = searchQuery.trim() ? '🔍 لا توجد نتائج' : '📭 لا توجد ملفات';
+                tr.appendChild(td);
+                fileTableBody.appendChild(tr);
+                fileCountLabel.textContent = '0 ملف';
+                return;
+            }
 
-  exit(_) {
-    print('logout');
-    setTimeout(() => {
-      document.body.style.transition = 'opacity .4s';
-      document.body.style.opacity = '0';
-    }, 200);
-  },
-};
+            files.forEach(file => {
+                const tr = document.createElement('tr');
+                if (activeFile && activeFile.id === file.id) {
+                    tr.className = 'active';
+                }
+                tr.draggable = true;
 
-function delay(ms) { return new Promise(r => setTimeout(r,ms)); }
+                const tdName = document.createElement('td');
+                const nameDiv = document.createElement('div');
+                nameDiv.className = 'file-name';
+                const icon = document.createElement('i');
+                icon.className = 'ext-icon';
+                if (file.name.endsWith('.html') || file.name.endsWith('.htm')) icon.textContent = '🌐';
+                else if (file.name.endsWith('.css')) icon.textContent = '🎨';
+                else if (file.name.endsWith('.js')) icon.textContent = '⚡';
+                else if (file.name.endsWith('.txt')) icon.textContent = '📝';
+                else if (file.name.endsWith('.json')) icon.textContent = '📋';
+                else if (file.name.endsWith('.md')) icon.textContent = '📘';
+                else if (isImageFile(file)) icon.textContent = '🖼️';
+                else icon.textContent = '📄';
+                nameDiv.appendChild(icon);
+                const nameSpan = document.createElement('span');
+                nameSpan.textContent = file.name;
+                nameDiv.appendChild(nameSpan);
+                tdName.appendChild(nameDiv);
 
-// ── Run ─────────────────────────────────────
-async function run(raw) {
-  const trimmed = raw.trim();
-  echoCmd(trimmed);
-  if (!trimmed) return;
+                const tdSize = document.createElement('td');
+                tdSize.className = 'size';
+                tdSize.textContent = file.size || '0 B';
 
-  const parts = trimmed.split(/\s+/);
-  const name  = parts[0].toLowerCase();
-  const args  = parts.slice(1);
+                const tdDate = document.createElement('td');
+                tdDate.className = 'date';
+                tdDate.textContent = file.modified || now();
 
-  if (CMDS[name]) {
-    await CMDS[name](args);
-  } else {
-    print(`bash: ${name}: command not found`, 'line-err');
-  }
-}
+                const tdActions = document.createElement('td');
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'file-actions';
+                const renameBtn = document.createElement('button');
+                renameBtn.textContent = '✏️';
+                renameBtn.title = 'إعادة تسمية';
+                renameBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openRenameModal('file', file);
+                });
+                actionsDiv.appendChild(renameBtn);
+                tdActions.appendChild(actionsDiv);
 
-// ── Input events ────────────────────────────
-cmdEl.addEventListener('keydown', async e => {
-  if (e.key === 'Enter') {
-    const val = cmdEl.value;
-    if (val.trim()) { STATE.hist.unshift(val); STATE.hIdx = -1; }
-    cmdEl.value = '';
-    await run(val);
+                tr.appendChild(tdName);
+                tr.appendChild(tdSize);
+                tr.appendChild(tdDate);
+                tr.appendChild(tdActions);
 
-  } else if (e.key === 'ArrowUp') {
-    e.preventDefault();
-    if (STATE.hIdx < STATE.hist.length - 1) {
-      STATE.hIdx++;
-      cmdEl.value = STATE.hist[STATE.hIdx];
-    }
-  } else if (e.key === 'ArrowDown') {
-    e.preventDefault();
-    if (STATE.hIdx > 0) { STATE.hIdx--; cmdEl.value = STATE.hist[STATE.hIdx]; }
-    else { STATE.hIdx = -1; cmdEl.value = ''; }
+                // Drag & Drop
+                tr.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('text/plain', JSON.stringify({ type: 'file', id: file.id }));
+                    tr.classList.add('dragging');
+                });
+                tr.addEventListener('dragend', () => tr.classList.remove('dragging'));
+                tr.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    tr.classList.add('drag-over');
+                });
+                tr.addEventListener('dragleave', () => tr.classList.remove('drag-over'));
+                tr.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    tr.classList.remove('drag-over');
+                    const raw = e.dataTransfer.getData('text/plain');
+                    if (!raw) return;
+                    try {
+                        const data = JSON.parse(raw);
+                        if (data.type === 'file' && data.id !== file.id) {
+                            const draggedFile = findNodeById(root, data.id);
+                            if (draggedFile && draggedFile.type === 'file') {
+                                const parent = getParent(draggedFile, root);
+                                if (parent) {
+                                    parent.children = parent.children.filter(c => c.id !== draggedFile.id);
+                                    if (!currentFolder.children) currentFolder.children = [];
+                                    currentFolder.children.push(draggedFile);
+                                    renderAll();
+                                }
+                            }
+                        }
+                    } catch (err) {}
+                });
 
-  } else if (e.key === 'Tab') {
-    e.preventDefault();
-    const p = cmdEl.value.toLowerCase();
-    const m = Object.keys(CMDS).filter(c => c.startsWith(p));
-    if (m.length === 1) { cmdEl.value = m[0]; }
-    else if (m.length > 1) { echoCmd(cmdEl.value); print(m.join('  '), 'line-dim'); }
+                tr.addEventListener('click', () => {
+                    activeFile = file;
+                    renderAll();
+                    if (!isImageFile(file)) {
+                        setTimeout(() => editor.focus(), 100);
+                    }
+                });
 
-  } else if (e.ctrlKey && e.key === 'l') {
-    e.preventDefault();
-    CMDS.clear();
-  } else if (e.ctrlKey && e.key === 'c') {
-    e.preventDefault();
-    echoCmd(cmdEl.value + '^C');
-    cmdEl.value = '';
-  }
-});
+                fileTableBody.appendChild(tr);
+            });
 
-document.addEventListener('click', () => cmdEl.focus());
+            fileCountLabel.textContent = files.length + ' ملف';
+            currentPathLabel.textContent = currentFolder.name === 'الجذر' ? 'الملفات' : currentFolder.name;
+        }
 
-// ── Welcome ─────────────────────────────────
-async function welcome() {
-  const motd = [
-    { t:'line-dim', s:'Welcome to Termux' },
-    { t:'line-dim', s:'─'.repeat(32) },
-    { t:'line-out', s:'Type  help  to see available commands.' },
-  ];
-  for (const l of motd) {
-    await delay(80);
-    print(l.s, l.t);
-  }
-  br();
-  cmdEl.focus();
-}
+        // ---------- عرض المحرر / المعاينة ----------
+        function renderEditor() {
+            editor.style.display = 'none';
+            previewImage.style.display = 'none';
+            emptyEditorMsg.style.display = 'flex';
 
-welcome();
+            if (!activeFile) {
+                editorFileName.textContent = '📄 محرر';
+                editorStatus.textContent = '⏸️ لا يوجد ملف';
+                return;
+            }
+
+            const isImg = isImageFile(activeFile);
+
+            if (isImg) {
+                previewImage.style.display = 'flex';
+                previewImg.src = activeFile.content || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Crect width="200" height="200" fill="%2321262d"/%3E%3Ctext x="50" y="110" fill="%238b949e" font-size="16"%3E🖼️ صورة%3C/text%3E%3C/svg%3E';
+                editorFileName.textContent = `🖼️ ${activeFile.name}`;
+                editorStatus.textContent = '🖼️ معاينة';
+                emptyEditorMsg.style.display = 'none';
+                const parent = getParent(activeFile, root);
+                statusRight.textContent = `📂 ${parent ? parent.name : 'الجذر'} / ${activeFile.name}`;
+                return;
+            }
+
+            editor.style.display = 'block';
+            editor.value = activeFile.content || '';
+            emptyEditorMsg.style.display = 'none';
+            editorFileName.textContent = `📄 ${activeFile.name}`;
+            editorStatus.textContent = '✏️ جاهز';
+            const parent = getParent(activeFile, root);
+            statusRight.textContent = `📂 ${parent ? parent.name : 'الجذر'} / ${activeFile.name}`;
+        }
+
+        // ---------- تحديث الحالة ----------
+        function updateStatus() {
+            const totalFiles = countAllFiles(root);
+            const totalFolders = countFolders(root);
+            statusLeft.textContent = `📊 ${totalFolders} مجلد · ${totalFiles} ملف`;
+            if (activeFile) {
+                statusLeft.textContent += ` · مفتوح: ${activeFile.name}`;
+            }
+            if (currentFolder) {
+                statusRight.textContent = `📂 ${currentFolder.name}`;
+            }
+        }
+
+        function countAllFiles(node) {
+            let count = 0;
+            if (node.type === 'file') count++;
+            if (node.children) {
+                for (let child of node.children) {
+                    count += countAllFiles(child);
+                }
+            }
+            return count;
+        }
+
+        // ---------- حفظ تلقائي ----------
+        function autoSave() {
+            if (!activeFile || isImageFile(activeFile)) return;
+            activeFile.content = editor.value;
+            activeFile.size = fakeSize(activeFile.content);
+            activeFile.modified = now();
+            editorStatus.textContent = '✅ حفظ';
+            setTimeout(() => {
+                if (activeFile && !isImageFile(activeFile)) editorStatus.textContent = '✏️ جاهز';
+            }, 600);
+        }
+
+        // ---------- إعادة التسمية ----------
+        function openRenameModal(type, node) {
+            renameTarget = { type, node };
+            renameTitle.textContent = type === 'file' ? `إعادة تسمية الملف: ${node.name}` : `إعادة تسمية المجلد: ${node.name}`;
+            renameInput.value = node.name;
+            renameModal.classList.add('active');
+            renameInput.focus();
+            renameInput.select();
+        }
+
+        function closeRenameModal() {
+            renameModal.classList.remove('active');
+            renameTarget = null;
+        }
+
+        function confirmRename() {
+            if (!renameTarget) return;
+            const newName = renameInput.value.trim();
+            if (!newName) {
+                alert('الاسم لا يمكن أن يكون فارغاً');
+                return;
+            }
+            const { type, node } = renameTarget;
+            // التحقق من التكرار
+            const parent = getParent(node, root);
+            if (parent) {
+                const exists = parent.children.some(c => c.id !== node.id && c.name === newName && c.type === type);
+                if (exists) {
+                    alert(`يوجد ${type === 'file' ? 'ملف' : 'مجلد'} بنفس الاسم.`);
+                    return;
+                }
+            }
+            node.name = newName;
+            if (type === 'file' && activeFile && activeFile.id === node.id) {
+                // تحديث المحرر
+                renderEditor();
+            }
+            closeRenameModal();
+            renderAll();
+        }
+
+        // ---------- رفع الملفات ----------
+        function handleUpload(files) {
+            if (!files || files.length === 0) return;
+            for (let file of files) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    let content = e.target.result;
+                    let size = formatSize(file.size);
+                    const isImg = file.type.startsWith('image/');
+                    // إذا كانت صورة نخزنها كـ base64
+                    if (isImg) {
+                        content = e.target.result; // base64
+                    } else {
+                        // ملف نصي
+                        content = e.target.result;
+                    }
+                    const newFile = {
+                        id: genId(),
+                        name: file.name,
+                        type: 'file',
+                        content: content,
+                        size: size,
+                        modified: now()
+                    };
+                    if (!currentFolder.children) currentFolder.children = [];
+                    currentFolder.children.push(newFile);
+                    renderAll();
+                };
+                if (file.type.startsWith('image/') || file.type.startsWith('text/')) {
+                    reader.readAsDataURL(file);
+                } else {
+                    // ملفات غير نصية نخزنها كنص (للمثال فقط)
+                    reader.readAsText(file);
+                }
+            }
+            statusLeft.textContent = `📤 تم رفع ${files.length} ملف`;
+            setTimeout(updateStatus, 1500);
+        }
+
+        // ---------- إعادة رسم كل شيء ----------
+        function renderAll() {
+            renderTree();
+            renderFiles();
+            renderEditor();
+            updateStatus();
+        }
+
+        // ---------- العمليات ----------
+        function addFolder() {
+            const name = prompt('اسم المجلد الجديد:');
+            if (!name || name.trim() === '') return;
+            if (currentFolder.children && currentFolder.children.some(c => c.type === 'folder' && c.name === name.trim())) {
+                alert('يوجد مجلد بنفس الاسم.');
+                return;
+            }
+            const newFolder = {
+                id: genId(),
+                name: name.trim(),
+                type: 'folder',
+                children: []
+            };
+            if (!currentFolder.children) currentFolder.children = [];
+            currentFolder.children.push(newFolder);
+            renderAll();
+        }
+
+        function addFile() {
+            const name = prompt('اسم الملف (مع الامتداد):');
+            if (!name || name.trim() === '') return;
+            if (currentFolder.children && currentFolder.children.some(c => c.type === 'file' && c.name === name.trim())) {
+                alert('يوجد ملف بنفس الاسم.');
+                return;
+            }
+            const newFile = {
+                id: genId(),
+                name: name.trim(),
+                type: 'file',
+                content: '',
+                size: '0 B',
+                modified: now()
+            };
+            if (!currentFolder.children) currentFolder.children = [];
+            currentFolder.children.push(newFile);
+            activeFile = newFile;
+            renderAll();
+            if (!isImageFile(newFile)) {
+                setTimeout(() => editor.focus(), 100);
+            }
+        }
+
+        function deleteSelected() {
+            if (!activeFile) {
+                alert('اختر ملفاً أولاً من الجدول.');
+                return;
+            }
+            if (!confirm(`هل تريد حذف "${activeFile.name}" نهائياً؟`)) return;
+            const parent = getParent(activeFile, root);
+            if (!parent) return;
+            parent.children = parent.children.filter(c => c.id !== activeFile.id);
+            activeFile = null;
+            renderAll();
+        }
+
+        // ---------- ربط الأحداث ----------
+        addFolderBtn.addEventListener('click', addFolder);
+        addFileBtn.addEventListener('click', addFile);
+        deleteBtn.addEventListener('click', deleteSelected);
+        refreshBtn.addEventListener('click', () => {
+            renderAll();
+            statusLeft.textContent = '🔄 تم التحديث';
+            setTimeout(updateStatus, 500);
+        });
+
+        uploadInput.addEventListener('change', (e) => {
+            handleUpload(e.target.files);
+            uploadInput.value = '';
+        });
+
+        renameCancel.addEventListener('click', closeRenameModal);
+        renameConfirm.addEventListener('click', confirmRename);
+        renameInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') confirmRename();
+            if (e.key === 'Escape') closeRenameModal();
+        });
+        renameModal.addEventListener('click', (e) => {
+            if (e.target === renameModal) closeRenameModal();
+        });
+
+        editor.addEventListener('input', autoSave);
+        editor.addEventListener('blur', autoSave);
+        setInterval(autoSave, 3000);
+
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                autoSave();
+                statusLeft.textContent = '✅ حفظ';
+                setTimeout(updateStatus, 800);
+            }
+        });
+
+        searchInput.addEventListener('input', (e) => {
+            searchQuery = e.target.value;
+            renderFiles();
+        });
+
+        // ---------- التهيئة ----------
+        renderAll();
+        statusLeft.textContent = '🚀 جاهز (اسحب وأفلت · ارفع ملفات · أعد التسمية)';
+
+        console.log('✅ مدير الملفات الكامل يعمل!');
+    })();
 </script>
 </body>
-</html>
+  </html>
