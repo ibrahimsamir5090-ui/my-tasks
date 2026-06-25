@@ -3,1265 +3,945 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>مدير الملفات - الإصدار الكامل</title>
+    <title>استضافة بوتات واتساب - منصة السيرفرات</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         body {
-            background: #0d1117;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            background: #0b0e14;
+            color: #e5e9f0;
             min-height: 100vh;
-            padding: 16px;
         }
-        .app-container {
-            width: 1400px;
-            max-width: 100%;
-            height: 94vh;
-            background: #161b22;
-            border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+        .navbar {
+            background: #141a24;
+            padding: 1rem 2rem;
             display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            border: 1px solid #30363d;
-        }
-
-        /* شريط الأدوات */
-        .toolbar {
-            padding: 10px 18px;
-            background: #0d1117;
-            border-bottom: 1px solid #30363d;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            align-items: center;
             justify-content: space-between;
-        }
-        .toolbar-left {
-            display: flex;
             align-items: center;
-            gap: 12px;
+            border-bottom: 1px solid #2a313c;
             flex-wrap: wrap;
         }
-        .toolbar-left h1 {
-            color: #f0f6fc;
-            font-size: 17px;
-            font-weight: 600;
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #4fc3f7;
+        }
+        .logo i { margin-left: 8px; }
+        .user-area {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 20px;
         }
-        .toolbar-left h1 i {
-            color: #58a6ff;
-        }
-        .search-box {
-            background: #21262d;
-            border: 1px solid #30363d;
-            border-radius: 8px;
-            padding: 5px 12px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            color: #8b949e;
-            width: 200px;
-            transition: 0.3s;
-        }
-        .search-box:focus-within {
-            border-color: #58a6ff;
-            box-shadow: 0 0 0 3px #1f6feb33;
-        }
-        .search-box input {
-            background: transparent;
+        .user-area button {
+            background: #2a313c;
             border: none;
-            color: #c9d1d9;
-            outline: none;
+            color: #e5e9f0;
+            padding: 0.5rem 1.2rem;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+        .user-area button:hover { background: #3b4554; }
+        .container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
             width: 100%;
-            font-size: 12px;
-            padding: 3px 0;
         }
-        .search-box input::placeholder {
-            color: #484f58;
+        .servers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
         }
-        .actions {
+        .server-card {
+            background: #141a24;
+            border-radius: 20px;
+            padding: 1.5rem;
+            border: 1px solid #2a313c;
+            transition: 0.3s;
+            position: relative;
+        }
+        .server-card:hover {
+            border-color: #4fc3f7;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .server-card .top {
             display: flex;
-            gap: 5px;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .server-card .name {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+        .server-card .status {
+            background: #2e7d32;
+            padding: 0.2rem 0.8rem;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            color: #a5d6a7;
+        }
+        .server-card .status.off {
+            background: #4a2e2e;
+            color: #ef9a9a;
+        }
+        .server-card .actions {
+            margin-top: 1.5rem;
+            display: flex;
+            gap: 10px;
             flex-wrap: wrap;
         }
-        .btn {
-            background: #21262d;
-            border: 1px solid #30363d;
-            color: #c9d1d9;
-            padding: 5px 12px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 500;
+        .server-card .actions button {
+            background: #1f2833;
+            border: none;
+            color: #e5e9f0;
+            padding: 0.4rem 1rem;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .server-card .actions button:hover { background: #2a313c; }
+        .server-card .actions .primary {
+            background: #0d47a1;
+            color: white;
+        }
+        .server-card .actions .primary:hover { background: #1565c0; }
+        .btn-create {
+            background: #0d47a1;
+            color: white;
+            border: none;
+            padding: 0.8rem 2.5rem;
+            border-radius: 60px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
             display: inline-flex;
             align-items: center;
-            gap: 4px;
-            cursor: pointer;
-            transition: 0.2s;
-            white-space: nowrap;
+            gap: 10px;
+            margin-top: 1rem;
         }
-        .btn:hover {
-            background: #30363d;
-            border-color: #58a6ff;
-            color: #f0f6fc;
+        .btn-create:hover {
+            background: #1565c0;
+            transform: scale(1.02);
         }
-        .btn-primary {
-            background: #238636;
-            border-color: #2ea043;
-            color: white;
-        }
-        .btn-primary:hover {
-            background: #2ea043;
-        }
-        .btn-danger {
-            background: #da3633;
-            border-color: #f85149;
-            color: white;
-        }
-        .btn-danger:hover {
-            background: #f85149;
-        }
-        .btn-outline {
-            background: transparent;
-            border-color: #30363d;
-        }
-        .btn-upload {
-            background: #1f6feb;
-            border-color: #388bfd;
-            color: white;
-            position: relative;
-            overflow: hidden;
-        }
-        .btn-upload:hover {
-            background: #388bfd;
-        }
-        .btn-upload input[type="file"] {
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 100%;
-            height: 100%;
-            opacity: 0;
-            cursor: pointer;
-        }
-
-        /* التخطيط الرئيسي */
-        .main-layout {
-            display: flex;
-            flex: 1;
-            overflow: hidden;
-        }
-
-        /* الشريط الجانبي */
-        .sidebar {
-            width: 270px;
-            background: #0d1117;
-            border-left: 1px solid #30363d;
-            padding: 8px 6px;
-            overflow-y: auto;
-            flex-shrink: 0;
-        }
-        .sidebar-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 3px 6px 10px 6px;
-            color: #8b949e;
-            font-size: 12px;
-            font-weight: 600;
-            border-bottom: 1px solid #21262d;
-            margin-bottom: 8px;
-        }
-        .tree {
-            list-style: none;
-            padding-right: 0;
-        }
-        .tree li {
-            padding: 1px 0;
-        }
-        .tree-item {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            padding: 4px 8px;
-            border-radius: 6px;
-            cursor: grab;
-            color: #c9d1d9;
-            font-size: 13px;
-            transition: 0.15s;
-            position: relative;
-            border: 1px solid transparent;
-        }
-        .tree-item:hover {
-            background: #21262d;
-        }
-        .tree-item.active {
-            background: #1f2937;
-            color: #58a6ff;
-            font-weight: 500;
-        }
-        .tree-item .folder-icon {
-            color: #58a6ff;
-            font-size: 14px;
-        }
-        .tree-item .chevron {
-            margin-right: auto;
-            color: #8b949e;
-            font-size: 10px;
-            transition: 0.2s;
-        }
-        .tree-item .chevron.open {
-            transform: rotate(90deg);
-        }
-        .tree-children {
-            padding-right: 18px;
-            list-style: none;
-            display: none;
-        }
-        .tree-children.open {
-            display: block;
-        }
-        .tree-item .badge {
-            background: #21262d;
-            padding: 0 7px;
-            border-radius: 20px;
-            font-size: 10px;
-            color: #8b949e;
-            margin-right: auto;
-        }
-        .tree-item .item-actions {
-            display: none;
-            gap: 4px;
-            margin-right: 4px;
-        }
-        .tree-item:hover .item-actions {
-            display: flex;
-        }
-        .tree-item .item-actions button {
-            background: transparent;
-            border: none;
-            color: #8b949e;
-            cursor: pointer;
-            font-size: 11px;
-            padding: 0 3px;
-        }
-        .tree-item .item-actions button:hover {
-            color: #f0f6fc;
-        }
-
-        /* لوحة الملفات */
-        .file-panel {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background: #0d1117;
-            padding: 10px 14px;
-            overflow: hidden;
-        }
-        .file-panel-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-            flex-wrap: wrap;
-            gap: 6px;
-        }
-        .file-panel-header h2 {
-            color: #f0f6fc;
-            font-size: 15px;
-            font-weight: 400;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .file-panel-header h2 i {
-            color: #58a6ff;
-        }
-        .file-table-wrap {
-            flex: 1;
-            overflow-y: auto;
-            border: 1px solid #21262d;
-            border-radius: 10px;
-            background: #161b22;
-            min-height: 120px;
-        }
-        .file-table {
-            width: 100%;
-            border-collapse: collapse;
-            color: #c9d1d9;
-            font-size: 13px;
-        }
-        .file-table th {
-            text-align: right;
-            padding: 8px 12px;
-            background: #0d1117;
-            color: #8b949e;
-            font-weight: 500;
-            border-bottom: 1px solid #21262d;
-            position: sticky;
-            top: 0;
-            z-index: 2;
-        }
-        .file-table td {
-            padding: 6px 12px;
-            border-bottom: 1px solid #21262d;
-            cursor: pointer;
-            transition: 0.1s;
-        }
-        .file-table tr:hover td {
-            background: #1c2128;
-        }
-        .file-table tr.active td {
-            background: #1f2937;
-        }
-        .file-table .file-name {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .file-table .file-name i {
-            color: #8b949e;
-        }
-        .file-table .file-name .ext-icon {
-            color: #58a6ff;
-        }
-        .file-table .size {
-            color: #8b949e;
-            font-size: 12px;
-        }
-        .file-table .date {
-            color: #8b949e;
-            font-size: 12px;
-        }
-        .file-table .file-actions {
-            display: none;
-            gap: 4px;
-        }
-        .file-table tr:hover .file-actions {
-            display: flex;
-        }
-        .file-table .file-actions button {
-            background: transparent;
-            border: none;
-            color: #8b949e;
-            cursor: pointer;
-            font-size: 12px;
-            padding: 0 4px;
-        }
-        .file-table .file-actions button:hover {
-            color: #f0f6fc;
-        }
-
-        /* محرر / معاينة */
-        .editor-area {
-            background: #0d1117;
-            border: 1px solid #21262d;
-            border-radius: 10px;
-            margin-top: 8px;
-            height: 180px;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-        .editor-area .editor-header {
-            background: #161b22;
-            padding: 5px 12px;
-            border-bottom: 1px solid #21262d;
-            display: flex;
-            justify-content: space-between;
-            color: #8b949e;
-            font-size: 12px;
-        }
-        .editor-area textarea {
-            flex: 1;
-            background: transparent;
-            border: none;
-            color: #e6edf3;
-            font-size: 13px;
-            resize: none;
-            outline: none;
-            padding: 10px 14px;
-            font-family: 'Fira Code', 'Cascadia Code', monospace;
-            line-height: 1.7;
-            display: none;
-        }
-        .editor-area .preview-image {
-            flex: 1;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 8px;
-            background: #0d1117;
-        }
-        .editor-area .preview-image img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-            border-radius: 6px;
-        }
-        .empty-state {
-            color: #484f58;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            gap: 3px;
-            font-size: 13px;
-        }
-        .empty-state i {
-            font-size: 28px;
-            opacity: 0.3;
-        }
-
-        /* شريط الحالة */
-        .status-bar {
-            padding: 5px 18px;
-            background: #0d1117;
-            border-top: 1px solid #21262d;
-            color: #8b949e;
-            font-size: 11px;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        /* مودال إعادة التسمية */
         .modal-overlay {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.7);
-            z-index: 999;
+            backdrop-filter: blur(4px);
             justify-content: center;
             align-items: center;
+            z-index: 1000;
         }
-        .modal-overlay.active {
+        .modal-overlay.active { display: flex; }
+        .modal {
+            background: #1a212b;
+            border-radius: 30px;
+            padding: 2.5rem;
+            max-width: 500px;
+            width: 90%;
+            border: 1px solid #2a313c;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.7);
+        }
+        .modal h2 {
+            margin-bottom: 1.5rem;
+            color: #4fc3f7;
             display: flex;
-        }
-        .modal-box {
-            background: #161b22;
-            border: 1px solid #30363d;
-            border-radius: 16px;
-            padding: 28px 32px;
-            width: 400px;
-            max-width: 90%;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
-        }
-        .modal-box h3 {
-            color: #f0f6fc;
-            margin-bottom: 16px;
-            font-weight: 500;
-        }
-        .modal-box input {
-            width: 100%;
-            padding: 10px 14px;
-            background: #0d1117;
-            border: 1px solid #30363d;
-            border-radius: 8px;
-            color: #c9d1d9;
-            font-size: 14px;
-            outline: none;
-        }
-        .modal-box input:focus {
-            border-color: #58a6ff;
-        }
-        .modal-box .modal-actions {
-            display: flex;
+            align-items: center;
             gap: 10px;
-            margin-top: 18px;
-            justify-content: flex-end;
         }
-        .modal-box .modal-actions button {
-            padding: 8px 20px;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
+        .modal label {
+            display: block;
+            margin: 1rem 0 0.3rem;
             font-weight: 500;
         }
-        .modal-box .modal-actions .btn-confirm {
-            background: #238636;
+        .modal input {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            background: #0b0e14;
+            border: 1px solid #2a313c;
+            border-radius: 50px;
+            color: #e5e9f0;
+            font-size: 1rem;
+        }
+        .modal input:focus {
+            outline: none;
+            border-color: #4fc3f7;
+        }
+        .modal .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 2rem;
+        }
+        .modal .modal-actions button {
+            padding: 0.6rem 2rem;
+            border-radius: 60px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .modal .modal-actions .btn-confirm {
+            background: #0d47a1;
             color: white;
         }
-        .modal-box .modal-actions .btn-confirm:hover {
-            background: #2ea043;
+        .modal .modal-actions .btn-confirm:hover { background: #1565c0; }
+        .modal .modal-actions .btn-cancel {
+            background: #2a313c;
+            color: #e5e9f0;
         }
-        .modal-box .modal-actions .btn-cancel {
-            background: #21262d;
-            color: #c9d1d9;
+        .modal .modal-actions .btn-cancel:hover { background: #3b4554; }
+        
+        /* صفحة السيرفر */
+        .server-page {
+            display: none;
+            flex-direction: column;
+            gap: 2rem;
         }
-        .modal-box .modal-actions .btn-cancel:hover {
-            background: #30363d;
+        .server-page.active { display: flex; }
+        .server-page .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
         }
-
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: #0d1117; }
-        ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 10px; }
-
-        @media (max-width: 768px) {
-            .sidebar { width: 180px; }
-            .search-box { width: 130px; }
+        .server-page .header h1 { color: #4fc3f7; }
+        
+        .file-upload-area {
+            background: #141a24;
+            border: 2px dashed #2a313c;
+            border-radius: 30px;
+            padding: 2.5rem;
+            text-align: center;
+            transition: 0.3s;
+        }
+        .file-upload-area.dragover {
+            border-color: #4fc3f7;
+            background: #1a212b;
+        }
+        .file-upload-area input[type="file"] { display: none; }
+        .file-upload-area .upload-btn {
+            background: #0d47a1;
+            color: white;
+            border: none;
+            padding: 0.8rem 2.5rem;
+            border-radius: 60px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 1.1rem;
+        }
+        .file-upload-area .upload-btn:hover { background: #1565c0; }
+        .file-list {
+            margin-top: 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .file-list .file-item {
+            background: #1f2833;
+            padding: 0.4rem 1.2rem;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+            margin: 1.5rem 0;
+            flex-wrap: wrap;
+        }
+        .nav-buttons button {
+            background: #1f2833;
+            border: none;
+            color: #e5e9f0;
+            padding: 0.7rem 2rem;
+            border-radius: 60px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.2s;
+            flex: 1;
+            min-width: 150px;
+        }
+        .nav-buttons button:hover { background: #2a313c; }
+        .nav-buttons .active-btn {
+            background: #0d47a1;
+            color: white;
+        }
+        
+        .step-content {
+            background: #141a24;
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid #2a313c;
+            min-height: 300px;
+        }
+        .step-content .step-panel { display: none; }
+        .step-content .step-panel.active { display: block; }
+        
+        /* تيرمنال بحجم تيرمكس */
+        .terminal-wrapper {
+            background: #0a0e14;
+            border-radius: 12px;
+            border: 1px solid #1e2733;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+        }
+        .terminal-header {
+            background: #141a24;
+            padding: 0.6rem 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid #1e2733;
+        }
+        .terminal-header .dots {
+            display: flex;
+            gap: 8px;
+        }
+        .terminal-header .dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .terminal-header .dot.red { background: #ff5f56; }
+        .terminal-header .dot.yellow { background: #ffbd2e; }
+        .terminal-header .dot.green { background: #27c93f; }
+        .terminal-header .terminal-title {
+            color: #8a94a6;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-right: 10px;
+        }
+        .terminal-box {
+            background: #0a0e14;
+            padding: 1.2rem 1.5rem;
+            font-family: 'Fira Code', 'Cascadia Code', 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #e5e9f0;
+            min-height: 400px;
+            max-height: 500px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .terminal-box::-webkit-scrollbar {
+            width: 8px;
+        }
+        .terminal-box::-webkit-scrollbar-track {
+            background: #0a0e14;
+        }
+        .terminal-box::-webkit-scrollbar-thumb {
+            background: #2a313c;
+            border-radius: 4px;
+        }
+        .terminal-box::-webkit-scrollbar-thumb:hover {
+            background: #3b4554;
+        }
+        .terminal-box .prompt {
+            color: #4fc3f7;
+        }
+        .terminal-box .command {
+            color: #e5e9f0;
+        }
+        .terminal-box .output {
+            color: #a5d6a7;
+        }
+        .terminal-box .qr-line {
+            color: #4fc3f7;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+        .terminal-box .error {
+            color: #ef9a9a;
+        }
+        .terminal-box .info {
+            color: #81d4fa;
+        }
+        .terminal-input-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 1rem;
+            padding: 0 0.5rem 0.5rem 0.5rem;
+            background: #0a0e14;
+            border-top: 1px solid #1e2733;
+            padding-top: 0.8rem;
+        }
+        .terminal-input-row input {
+            flex: 1;
+            background: #0a0e14;
+            border: 1px solid #1e2733;
+            border-radius: 6px;
+            padding: 0.6rem 1rem;
+            color: #e5e9f0;
+            font-family: 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+            font-size: 14px;
+            outline: none;
+            transition: 0.2s;
+        }
+        .terminal-input-row input:focus {
+            border-color: #4fc3f7;
+            box-shadow: 0 0 0 2px rgba(79, 195, 247, 0.1);
+        }
+        .terminal-input-row input::placeholder {
+            color: #4a5568;
+        }
+        .terminal-input-row button {
+            background: #0d47a1;
+            color: white;
+            border: none;
+            padding: 0.6rem 1.8rem;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 14px;
+        }
+        .terminal-input-row button:hover {
+            background: #1565c0;
+        }
+        
+        .options-box {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .options-box label {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 500;
+        }
+        .options-box input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: #4fc3f7;
+        }
+        .start-btn {
+            background: #2e7d32;
+            color: white;
+            border: none;
+            padding: 1rem 2.5rem;
+            border-radius: 60px;
+            font-weight: 700;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: 0.2s;
+            width: fit-content;
+        }
+        .start-btn:hover { background: #388e3c; }
+        
+        .step-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 1.5rem;
+            gap: 15px;
+        }
+        .step-actions button {
+            padding: 0.6rem 2rem;
+            border-radius: 60px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .step-actions .btn-next {
+            background: #0d47a1;
+            color: white;
+        }
+        .step-actions .btn-next:hover { background: #1565c0; }
+        .step-actions .btn-prev {
+            background: #2a313c;
+            color: #e5e9f0;
+        }
+        .step-actions .btn-prev:hover { background: #3b4554; }
+        
+        .hidden { display: none !important; }
+        .text-muted { color: #8a94a6; }
+        .mt-2 { margin-top: 2rem; }
+        .mb-1 { margin-bottom: 1rem; }
+        .flex-center { display: flex; justify-content: center; }
+        .gap-1 { gap: 1rem; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+        
+        @media (max-width: 600px) {
+            .navbar { flex-direction: column; gap: 10px; align-items: stretch; }
+            .user-area { justify-content: center; }
+            .container { padding: 0 1rem; }
+            .nav-buttons button { min-width: 100%; }
+            .terminal-box {
+                min-height: 250px;
+                max-height: 350px;
+                font-size: 12px;
+                padding: 1rem;
+            }
         }
     </style>
 </head>
 <body>
 
-<div class="app-container">
-    <!-- شريط الأدوات -->
-    <div class="toolbar">
-        <div class="toolbar-left">
-            <h1><i>📂</i> مدير الملفات</h1>
-            <div class="search-box">
-                <span>🔍</span>
-                <input type="text" id="searchInput" placeholder="بحث..." />
-            </div>
+    <nav class="navbar">
+        <div class="logo"><i class="fas fa-server"></i> BotHost</div>
+        <div class="user-area">
+            <span><i class="fas fa-user-circle"></i> admin</span>
+            <button id="myServersBtn"><i class="fas fa-folder"></i> سيرفراتك</button>
         </div>
-        <div class="actions">
-            <button class="btn btn-primary" id="addFolderBtn">📁 مجلد</button>
-            <button class="btn" id="addFileBtn">📄 ملف</button>
-            <button class="btn btn-upload">📤 رفع ملف<input type="file" id="uploadInput" multiple /></button>
-            <button class="btn btn-danger" id="deleteBtn">🗑️ حذف</button>
-            <button class="btn btn-outline" id="refreshBtn">🔄</button>
-        </div>
-    </div>
+    </nav>
 
-    <div class="main-layout">
-        <!-- الشريط الجانبي -->
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <span>📂 المستكشف</span>
-                <span id="folderCountSide">0</span>
+    <div class="container" id="appContainer">
+        <!-- الرئيسية -->
+        <div id="mainView">
+            <div class="flex-between">
+                <h2><i class="fas fa-cloud-upload-alt"></i> سيرفرات الاستضافة</h2>
+                <button class="btn-create" id="createServerBtn"><i class="fas fa-plus-circle"></i> إنشاء سيرفر +</button>
             </div>
-            <ul class="tree" id="treeContainer"></ul>
+            <div class="servers-grid" id="serversGrid"></div>
         </div>
 
-        <!-- لوحة الملفات -->
-        <div class="file-panel">
-            <div class="file-panel-header">
-                <h2><i>📄</i> <span id="currentPathLabel">الملفات</span></h2>
-                <span style="color:#8b949e; font-size:12px;" id="fileCountLabel">0 ملف</span>
+        <!-- صفحة السيرفر -->
+        <div id="serverPage" class="server-page">
+            <div class="header">
+                <h1 id="serverPageTitle"><i class="fas fa-server"></i> اسم السيرفر</h1>
+                <button class="btn-create" style="padding:0.5rem 1.5rem; font-size:1rem;" id="backToMainBtn"><i class="fas fa-arrow-right"></i> رجوع</button>
             </div>
 
-            <div class="file-table-wrap">
-                <table class="file-table" id="fileTable">
-                    <thead>
-                        <tr>
-                            <th style="width:45%;">الاسم</th>
-                            <th style="width:18%;">الحجم</th>
-                            <th style="width:27%;">تاريخ التعديل</th>
-                            <th style="width:10%;">إجراءات</th>
-                        </tr>
-                    </thead>
-                    <tbody id="fileTableBody"></tbody>
-                </table>
+            <!-- رفع الملفات -->
+            <div class="file-upload-area" id="fileUploadArea">
+                <i class="fas fa-cloud-upload-alt fa-3x" style="color:#4fc3f7; margin-bottom:1rem;"></i>
+                <h3>ارفع ملف بوتك</h3>
+                <p class="text-muted">اسحب الملف أو اختر من جهازك</p>
+                <button class="upload-btn" id="uploadFileBtn"><i class="fas fa-upload"></i> رفع الملفات +</button>
+                <input type="file" id="fileInput" multiple />
+                <div class="file-list" id="fileList"></div>
             </div>
 
-            <!-- محرر / معاينة -->
-            <div class="editor-area">
-                <div class="editor-header">
-                    <span id="editorFileName">📄 محرر</span>
-                    <span id="editorStatus">✏️ جاهز</span>
+            <!-- أزرار التنقل -->
+            <div class="nav-buttons">
+                <button class="active-btn" data-step="0">رفع الملفات</button>
+                <button data-step="1">تشغيل السيرفر</button>
+                <button data-step="2">تثبيت المكتبات</button>
+                <button data-step="3">Terminal</button>
+            </div>
+
+            <!-- محتوى الخطوات -->
+            <div class="step-content">
+                <!-- الخطوة 0: رفع الملفات -->
+                <div class="step-panel active" data-panel="0">
+                    <div style="padding: 1rem 0;">
+                        <p class="text-muted">📁 اختر ملفات البوت الخاصة بك لرفعها على السيرفر</p>
+                        <div style="margin-top: 1rem; display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button class="btn-create" style="padding:0.5rem 1.5rem; font-size:0.9rem;" id="uploadMoreBtn"><i class="fas fa-plus"></i> إضافة ملفات</button>
+                        </div>
+                    </div>
+                    <div class="step-actions">
+                        <button class="btn-next" id="step0Next">التالي <i class="fas fa-arrow-left"></i></button>
+                    </div>
                 </div>
-                <textarea id="editor" placeholder="اختر ملفاً للتحرير..."></textarea>
-                <div class="preview-image" id="previewImage">
-                    <img id="previewImg" src="" alt="معاينة الصورة" />
+
+                <!-- الخطوة 1: تشغيل السيرفر -->
+                <div class="step-panel" data-panel="1">
+                    <div class="options-box">
+                        <h3><i class="fas fa-play-circle"></i> تشغيل السيرفر</h3>
+                        <p>اضغط على زر التشغيل لبدء البوت</p>
+                        <button class="start-btn" id="startServerBtn"><i class="fas fa-play"></i> تشغيل السيرفر</button>
+                        <div id="startStatus" class="text-muted" style="margin-top:0.5rem;"></div>
+                    </div>
+                    <div class="step-actions">
+                        <button class="btn-prev" id="step1Prev"><i class="fas fa-arrow-right"></i> السابق</button>
+                        <button class="btn-next" id="step1Next">التالي <i class="fas fa-arrow-left"></i></button>
+                    </div>
                 </div>
-                <div class="empty-state" id="emptyEditorMsg">
-                    <i>📝</i>
-                    <span>لا يوجد ملف مفتوح</span>
+
+                <!-- الخطوة 2: تثبيت المكتبات -->
+                <div class="step-panel" data-panel="2">
+                    <div class="options-box">
+                        <h3><i class="fas fa-cogs"></i> تثبيت المكتبات</h3>
+                        <label><input type="checkbox" id="autoLibs" checked /> تثبيت مكتبات تلقائي</label>
+                        <label><input type="checkbox" id="manualLibs" /> تثبيت مكتبات يدوي</label>
+                        <div style="margin-top:0.5rem;">
+                            <button class="btn-create" id="installLibsBtn" style="padding:0.5rem 2rem; background:#2e7d32;"><i class="fas fa-download"></i> تثبيت</button>
+                        </div>
+                        <div id="libsStatus" class="text-muted" style="margin-top:0.5rem;"></div>
+                    </div>
+                    <div class="step-actions">
+                        <button class="btn-prev" id="step2Prev"><i class="fas fa-arrow-right"></i> السابق</button>
+                        <button class="btn-next" id="step2Next">التالي <i class="fas fa-arrow-left"></i></button>
+                    </div>
+                </div>
+
+                <!-- الخطوة 3: Terminal -->
+                <div class="step-panel" data-panel="3">
+                    <div class="options-box">
+                        <h3><i class="fas fa-terminal"></i> Terminal</h3>
+                        <div class="terminal-wrapper">
+                            <div class="terminal-header">
+                                <div class="dots">
+                                    <span class="dot red"></span>
+                                    <span class="dot yellow"></span>
+                                    <span class="dot green"></span>
+                                </div>
+                                <span class="terminal-title">bash — bot@server:~/bot</span>
+                            </div>
+                            <div class="terminal-box" id="terminalOutput">
+                                <span class="text-muted">[Terminal] السيرفر جاهز... سيظهر الـ QR أو رسائل البوت هنا.</span>
+                            </div>
+                            <div class="terminal-input-row">
+                                <input type="text" id="terminalInput" placeholder="اكتب أمراً..." />
+                                <button id="sendCommandBtn"><i class="fas fa-paper-plane"></i> إرسال</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="step-actions">
+                        <button class="btn-prev" id="step3Prev"><i class="fas fa-arrow-right"></i> السابق</button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="status-bar">
-        <span id="statusLeft">✅ جاهز</span>
-        <span id="statusRight">📂 بدون مجلد</span>
-    </div>
-</div>
-
-<!-- مودال إعادة التسمية -->
-<div class="modal-overlay" id="renameModal">
-    <div class="modal-box">
-        <h3 id="renameTitle">إعادة تسمية</h3>
-        <input type="text" id="renameInput" placeholder="الاسم الجديد..." />
-        <div class="modal-actions">
-            <button class="btn-cancel" id="renameCancel">إلغاء</button>
-            <button class="btn-confirm" id="renameConfirm">تأكيد</button>
+    <!-- مودال إنشاء سيرفر -->
+    <div class="modal-overlay" id="createModal">
+        <div class="modal">
+            <h2><i class="fas fa-plus-circle"></i> إنشاء سيرفر جديد</h2>
+            <label>اسم السيرفر</label>
+            <input type="text" id="serverNameInput" placeholder="مثل: بوت واتساب" />
+            <label>اسم المستخدم (username)</label>
+            <input type="text" id="serverUserInput" placeholder="مثل: mybot" />
+            <div class="modal-actions">
+                <button class="btn-cancel" id="cancelModalBtn">إلغاء</button>
+                <button class="btn-confirm" id="confirmCreateBtn"><i class="fas fa-plus"></i> +</button>
+            </div>
         </div>
     </div>
-</div>
 
-<script>
-    (function() {
-        "use strict";
+    <script>
+        // ============= البيانات =============
+        let servers = [
+            { id: 1, name: 'بوت التسويق', username: 'marketing_bot', status: 'online', files: ['bot.js', 'config.json'] },
+            { id: 2, name: 'بوت الدعم', username: 'support_bot', status: 'offline', files: ['app.js'] },
+        ];
+        let currentServerId = null;
+        let uploadedFiles = [];
+        let currentStep = 0;
 
-        // ---------- البيانات ----------
-        let root = {
-            id: 'root',
-            name: 'الجذر',
-            type: 'folder',
-            children: [
-                {
-                    id: 'f1',
-                    name: 'مشروع ويب',
-                    type: 'folder',
-                    children: [
-                        { id: 'f1-1', name: 'index.html', type: 'file', content: '<h1>مرحباً بالعالم</h1>', size: '120 B', modified: '2026-06-17 14:30' },
-                        { id: 'f1-2', name: 'style.css', type: 'file', content: 'body { background: #0d1117; }', size: '45 B', modified: '2026-06-17 14:25' },
-                        { id: 'f1-3', name: 'app.js', type: 'file', content: 'console.log("Hello!");', size: '32 B', modified: '2026-06-17 14:20' }
-                    ]
-                },
-                {
-                    id: 'f2',
-                    name: 'ملاحظات',
-                    type: 'folder',
-                    children: [
-                        { id: 'f2-1', name: 'مذكرة.txt', type: 'file', content: 'أفكار جديدة...', size: '18 B', modified: '2026-06-17 13:10' },
-                        { id: 'f2-2', name: 'قائمة مهام.md', type: 'file', content: '- مهمة 1\n- مهمة 2', size: '24 B', modified: '2026-06-17 12:45' }
-                    ]
-                },
-                {
-                    id: 'f3',
-                    name: 'صور',
-                    type: 'folder',
-                    children: []
-                }
-            ]
+        // عناصر DOM
+        const serversGrid = document.getElementById('serversGrid');
+        const createModal = document.getElementById('createModal');
+        const createServerBtn = document.getElementById('createServerBtn');
+        const cancelModalBtn = document.getElementById('cancelModalBtn');
+        const confirmCreateBtn = document.getElementById('confirmCreateBtn');
+        const serverNameInput = document.getElementById('serverNameInput');
+        const serverUserInput = document.getElementById('serverUserInput');
+        const mainView = document.getElementById('mainView');
+        const serverPage = document.getElementById('serverPage');
+        const serverPageTitle = document.getElementById('serverPageTitle');
+        const backToMainBtn = document.getElementById('backToMainBtn');
+        const fileInput = document.getElementById('fileInput');
+        const uploadFileBtn = document.getElementById('uploadFileBtn');
+        const uploadMoreBtn = document.getElementById('uploadMoreBtn');
+        const fileList = document.getElementById('fileList');
+        const myServersBtn = document.getElementById('myServersBtn');
+        const startServerBtn = document.getElementById('startServerBtn');
+        const startStatus = document.getElementById('startStatus');
+        const autoLibs = document.getElementById('autoLibs');
+        const manualLibs = document.getElementById('manualLibs');
+        const installLibsBtn = document.getElementById('installLibsBtn');
+        const libsStatus = document.getElementById('libsStatus');
+        const terminalOutput = document.getElementById('terminalOutput');
+        const terminalInput = document.getElementById('terminalInput');
+        const sendCommandBtn = document.getElementById('sendCommandBtn');
+
+        // أزرار التنقل
+        const stepButtons = document.querySelectorAll('.nav-buttons button');
+        const stepPanels = document.querySelectorAll('.step-panel');
+        const step0Next = document.getElementById('step0Next');
+        const step1Prev = document.getElementById('step1Prev');
+        const step1Next = document.getElementById('step1Next');
+        const step2Prev = document.getElementById('step2Prev');
+        const step2Next = document.getElementById('step2Next');
+        const step3Prev = document.getElementById('step3Prev');
+
+        // عرض السيرفرات
+        function renderServers() {
+            serversGrid.innerHTML = '';
+            servers.forEach(server => {
+                const card = document.createElement('div');
+                card.className = 'server-card';
+                card.innerHTML = `
+                    <div class="top">
+                        <span class="name"><i class="fas fa-server"></i> ${server.name}</span>
+                        <span class="status ${server.status === 'online' ? '' : 'off'}">${server.status === 'online' ? '🟢 نشط' : '🔴 متوقف'}</span>
+                    </div>
+                    <div style="font-size:0.9rem; color:#8a94a6; margin:0.5rem 0;">@${server.username}</div>
+                    <div class="actions">
+                        <button class="primary" onclick="openServer(${server.id})"><i class="fas fa-ellipsis-v"></i> ثلاث نقاط</button>
+                        <button onclick="toggleStatus(${server.id})"><i class="fas ${server.status === 'online' ? 'fa-pause' : 'fa-play'}"></i> ${server.status === 'online' ? 'إيقاف' : 'تشغيل'}</button>
+                    </div>
+                `;
+                serversGrid.appendChild(card);
+            });
+        }
+
+        // فتح صفحة السيرفر
+        window.openServer = function(id) {
+            currentServerId = id;
+            const server = servers.find(s => s.id === id);
+            if (!server) return;
+            serverPageTitle.innerHTML = `<i class="fas fa-server"></i> ${server.name} (${server.username})`;
+            uploadedFiles = [...server.files];
+            renderFiles();
+            mainView.style.display = 'none';
+            serverPage.classList.add('active');
+            goToStep(0);
+            terminalOutput.innerHTML = `<span class="info">[Terminal] جاهز للسيرفر: ${server.name}</span>\n`;
+            startStatus.textContent = '';
+            libsStatus.textContent = '';
+            // تحديث عنوان التيرمنال
+            document.querySelector('.terminal-title').textContent = `bash — ${server.username}@server:~/bot`;
         };
 
-        let nextId = 1000;
-        let currentFolder = root;
-        let activeFile = null;
-        let searchQuery = '';
-        let renameTarget = null; // { type: 'file'|'folder', node: ... }
+        // رجوع للرئيسية
+        backToMainBtn.addEventListener('click', () => {
+            serverPage.classList.remove('active');
+            mainView.style.display = 'block';
+            currentServerId = null;
+        });
 
-        // DOM
-        const treeContainer = document.getElementById('treeContainer');
-        const fileTableBody = document.getElementById('fileTableBody');
-        const editor = document.getElementById('editor');
-        const previewImage = document.getElementById('previewImage');
-        const previewImg = document.getElementById('previewImg');
-        const emptyEditorMsg = document.getElementById('emptyEditorMsg');
-        const editorFileName = document.getElementById('editorFileName');
-        const editorStatus = document.getElementById('editorStatus');
-        const currentPathLabel = document.getElementById('currentPathLabel');
-        const fileCountLabel = document.getElementById('fileCountLabel');
-        const folderCountSide = document.getElementById('folderCountSide');
-        const statusLeft = document.getElementById('statusLeft');
-        const statusRight = document.getElementById('statusRight');
-        const searchInput = document.getElementById('searchInput');
-        const renameModal = document.getElementById('renameModal');
-        const renameInput = document.getElementById('renameInput');
-        const renameTitle = document.getElementById('renameTitle');
-
-        const addFolderBtn = document.getElementById('addFolderBtn');
-        const addFileBtn = document.getElementById('addFileBtn');
-        const deleteBtn = document.getElementById('deleteBtn');
-        const refreshBtn = document.getElementById('refreshBtn');
-        const uploadInput = document.getElementById('uploadInput');
-        const renameCancel = document.getElementById('renameCancel');
-        const renameConfirm = document.getElementById('renameConfirm');
-
-        // ---------- مساعدات ----------
-        function findNodeById(node, id) {
-            if (node.id === id) return node;
-            if (node.type === 'folder' && node.children) {
-                for (let child of node.children) {
-                    const found = findNodeById(child, id);
-                    if (found) return found;
-                }
-            }
-            return null;
-        }
-
-        function getParent(node, rootNode) {
-            if (rootNode.type === 'folder') {
-                for (let child of (rootNode.children || [])) {
-                    if (child === node) return rootNode;
-                    const found = getParent(node, child);
-                    if (found) return found;
-                }
-            }
-            return null;
-        }
-
-        function genId() { return 'n' + (nextId++); }
-        function now() {
-            const d = new Date();
-            return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0') + ' ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
-        }
-        function fakeSize(content) {
-            return (content.length * 0.8).toFixed(0) + ' B';
-        }
-        function formatSize(bytes) {
-            if (bytes < 1024) return bytes + ' B';
-            if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
-            return (bytes/(1024*1024)).toFixed(1) + ' MB';
-        }
-
-        function isImageFile(file) {
-            const ext = file.name.split('.').pop().toLowerCase();
-            return ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'ico'].includes(ext);
-        }
-
-        function isTextFile(file) {
-            const ext = file.name.split('.').pop().toLowerCase();
-            return ['txt', 'html', 'htm', 'css', 'js', 'json', 'md', 'xml', 'csv', 'log', 'py', 'java', 'c', 'cpp', 'php', 'rb', 'go', 'rs'].includes(ext);
-        }
-
-        // ---------- البحث ----------
-        function filterFiles(files) {
-            if (!searchQuery.trim()) return files;
-            const q = searchQuery.trim().toLowerCase();
-            return files.filter(f => f.name.toLowerCase().includes(q));
-        }
-
-        // ---------- عرض الشجرة ----------
-        function renderTree() {
-            treeContainer.innerHTML = '';
-            if (root.children && root.children.length > 0) {
-                root.children.forEach(child => {
-                    if (child.type === 'folder') {
-                        const li = createTreeItem(child, 0);
-                        treeContainer.appendChild(li);
-                    }
-                });
-            } else {
-                const empty = document.createElement('li');
-                empty.style.color = '#484f58';
-                empty.style.padding = '12px 10px';
-                empty.textContent = '📭 لا توجد مجلدات';
-                treeContainer.appendChild(empty);
-            }
-            folderCountSide.textContent = countFolders(root);
-        }
-
-        function createTreeItem(node, level) {
-            const li = document.createElement('li');
-            const div = document.createElement('div');
-            div.className = `tree-item ${node === currentFolder ? 'active' : ''}`;
-            div.style.paddingRight = (level * 16 + 6) + 'px';
-            div.draggable = true;
-
-            const iconSpan = document.createElement('span');
-            iconSpan.className = 'folder-icon';
-            iconSpan.textContent = '📁';
-            div.appendChild(iconSpan);
-
-            const nameSpan = document.createElement('span');
-            nameSpan.textContent = node.name;
-            div.appendChild(nameSpan);
-
-            const count = (node.children || []).filter(c => c.type === 'file').length;
-            const badge = document.createElement('span');
-            badge.className = 'badge';
-            badge.textContent = count;
-            div.appendChild(badge);
-
-            // أزرار الإجراءات
-            const actions = document.createElement('span');
-            actions.className = 'item-actions';
-            const renameBtn = document.createElement('button');
-            renameBtn.textContent = '✏️';
-            renameBtn.title = 'إعادة تسمية';
-            renameBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                openRenameModal('folder', node);
-            });
-            actions.appendChild(renameBtn);
-            div.appendChild(actions);
-
-            const chevron = document.createElement('span');
-            chevron.className = 'chevron';
-            chevron.textContent = '▶';
-            div.appendChild(chevron);
-
-            const childUl = document.createElement('ul');
-            childUl.className = 'tree-children';
-            if (node.children && node.children.length > 0) {
-                node.children.forEach(child => {
-                    if (child.type === 'folder') {
-                        const childLi = createTreeItem(child, level + 1);
-                        childUl.appendChild(childLi);
-                    }
-                });
-                if (isAncestorOrSelf(node, currentFolder)) {
-                    childUl.classList.add('open');
-                    chevron.classList.add('open');
-                }
-            } else {
-                const emptyMsg = document.createElement('li');
-                emptyMsg.style.color = '#484f58';
-                emptyMsg.style.padding = '4px 10px';
-                emptyMsg.style.fontSize = '11px';
-                emptyMsg.textContent = '📭 فارغ';
-                childUl.appendChild(emptyMsg);
-            }
-
-            // Drag & Drop
-            div.addEventListener('dragstart', (e) => {
-                e.dataTransfer.setData('text/plain', JSON.stringify({ type: 'folder', id: node.id }));
-                div.classList.add('dragging');
-            });
-            div.addEventListener('dragend', () => div.classList.remove('dragging'));
-            div.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                div.classList.add('drag-over');
-            });
-            div.addEventListener('dragleave', () => div.classList.remove('drag-over'));
-            div.addEventListener('drop', (e) => {
-                e.preventDefault();
-                div.classList.remove('drag-over');
-                const raw = e.dataTransfer.getData('text/plain');
-                if (!raw) return;
-                try {
-                    const data = JSON.parse(raw);
-                    if (data.type === 'folder' && data.id !== node.id) {
-                        const draggedNode = findNodeById(root, data.id);
-                        if (draggedNode && draggedNode.type === 'folder') {
-                            if (isAncestorOrSelf(draggedNode, node)) return;
-                            const parent = getParent(draggedNode, root);
-                            if (parent) {
-                                parent.children = parent.children.filter(c => c.id !== draggedNode.id);
-                                if (!node.children) node.children = [];
-                                node.children.push(draggedNode);
-                                renderAll();
-                            }
-                        }
-                    }
-                } catch (err) {}
-            });
-
-            div.addEventListener('click', (e) => {
-                e.stopPropagation();
-                currentFolder = node;
-                activeFile = null;
-                searchQuery = '';
-                searchInput.value = '';
-                renderAll();
-            });
-
-            li.appendChild(div);
-            li.appendChild(childUl);
-            return li;
-        }
-
-        function isAncestorOrSelf(ancestor, node) {
-            if (ancestor === node) return true;
-            if (node.type === 'folder' && node.children) {
-                for (let child of node.children) {
-                    if (isAncestorOrSelf(ancestor, child)) return true;
-                }
-            }
-            return false;
-        }
-
-        function countFolders(node) {
-            let count = 0;
-            if (node.type === 'folder') {
-                count++;
-                if (node.children) {
-                    for (let child of node.children) {
-                        count += countFolders(child);
-                    }
-                }
-            }
-            return count;
-        }
-
-        // ---------- عرض جدول الملفات ----------
+        // عرض الملفات
         function renderFiles() {
-            const allFiles = (currentFolder.children || []).filter(c => c.type === 'file');
-            const files = filterFiles(allFiles);
-            fileTableBody.innerHTML = '';
-            if (files.length === 0) {
-                const tr = document.createElement('tr');
-                const td = document.createElement('td');
-                td.colSpan = 4;
-                td.style.color = '#484f58';
-                td.style.textAlign = 'center';
-                td.style.padding = '30px 0';
-                td.textContent = searchQuery.trim() ? '🔍 لا توجد نتائج' : '📭 لا توجد ملفات';
-                tr.appendChild(td);
-                fileTableBody.appendChild(tr);
-                fileCountLabel.textContent = '0 ملف';
+            fileList.innerHTML = '';
+            if (uploadedFiles.length === 0) {
+                fileList.innerHTML = '<span class="text-muted">لا توجد ملفات مرفوعة بعد</span>';
                 return;
             }
-
-            files.forEach(file => {
-                const tr = document.createElement('tr');
-                if (activeFile && activeFile.id === file.id) {
-                    tr.className = 'active';
-                }
-                tr.draggable = true;
-
-                const tdName = document.createElement('td');
-                const nameDiv = document.createElement('div');
-                nameDiv.className = 'file-name';
-                const icon = document.createElement('i');
-                icon.className = 'ext-icon';
-                if (file.name.endsWith('.html') || file.name.endsWith('.htm')) icon.textContent = '🌐';
-                else if (file.name.endsWith('.css')) icon.textContent = '🎨';
-                else if (file.name.endsWith('.js')) icon.textContent = '⚡';
-                else if (file.name.endsWith('.txt')) icon.textContent = '📝';
-                else if (file.name.endsWith('.json')) icon.textContent = '📋';
-                else if (file.name.endsWith('.md')) icon.textContent = '📘';
-                else if (isImageFile(file)) icon.textContent = '🖼️';
-                else icon.textContent = '📄';
-                nameDiv.appendChild(icon);
-                const nameSpan = document.createElement('span');
-                nameSpan.textContent = file.name;
-                nameDiv.appendChild(nameSpan);
-                tdName.appendChild(nameDiv);
-
-                const tdSize = document.createElement('td');
-                tdSize.className = 'size';
-                tdSize.textContent = file.size || '0 B';
-
-                const tdDate = document.createElement('td');
-                tdDate.className = 'date';
-                tdDate.textContent = file.modified || now();
-
-                const tdActions = document.createElement('td');
-                const actionsDiv = document.createElement('div');
-                actionsDiv.className = 'file-actions';
-                const renameBtn = document.createElement('button');
-                renameBtn.textContent = '✏️';
-                renameBtn.title = 'إعادة تسمية';
-                renameBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    openRenameModal('file', file);
-                });
-                actionsDiv.appendChild(renameBtn);
-                tdActions.appendChild(actionsDiv);
-
-                tr.appendChild(tdName);
-                tr.appendChild(tdSize);
-                tr.appendChild(tdDate);
-                tr.appendChild(tdActions);
-
-                // Drag & Drop
-                tr.addEventListener('dragstart', (e) => {
-                    e.dataTransfer.setData('text/plain', JSON.stringify({ type: 'file', id: file.id }));
-                    tr.classList.add('dragging');
-                });
-                tr.addEventListener('dragend', () => tr.classList.remove('dragging'));
-                tr.addEventListener('dragover', (e) => {
-                    e.preventDefault();
-                    tr.classList.add('drag-over');
-                });
-                tr.addEventListener('dragleave', () => tr.classList.remove('drag-over'));
-                tr.addEventListener('drop', (e) => {
-                    e.preventDefault();
-                    tr.classList.remove('drag-over');
-                    const raw = e.dataTransfer.getData('text/plain');
-                    if (!raw) return;
-                    try {
-                        const data = JSON.parse(raw);
-                        if (data.type === 'file' && data.id !== file.id) {
-                            const draggedFile = findNodeById(root, data.id);
-                            if (draggedFile && draggedFile.type === 'file') {
-                                const parent = getParent(draggedFile, root);
-                                if (parent) {
-                                    parent.children = parent.children.filter(c => c.id !== draggedFile.id);
-                                    if (!currentFolder.children) currentFolder.children = [];
-                                    currentFolder.children.push(draggedFile);
-                                    renderAll();
-                                }
-                            }
-                        }
-                    } catch (err) {}
-                });
-
-                tr.addEventListener('click', () => {
-                    activeFile = file;
-                    renderAll();
-                    if (!isImageFile(file)) {
-                        setTimeout(() => editor.focus(), 100);
-                    }
-                });
-
-                fileTableBody.appendChild(tr);
+            uploadedFiles.forEach(f => {
+                const span = document.createElement('span');
+                span.className = 'file-item';
+                span.innerHTML = `<i class="fas fa-file"></i> ${f} <i class="fas fa-times" style="cursor:pointer; color:#ef9a9a; margin-right:8px;" onclick="removeFile('${f}')"></i>`;
+                fileList.appendChild(span);
             });
-
-            fileCountLabel.textContent = files.length + ' ملف';
-            currentPathLabel.textContent = currentFolder.name === 'الجذر' ? 'الملفات' : currentFolder.name;
         }
 
-        // ---------- عرض المحرر / المعاينة ----------
-        function renderEditor() {
-            editor.style.display = 'none';
-            previewImage.style.display = 'none';
-            emptyEditorMsg.style.display = 'flex';
+        // حذف ملف
+        window.removeFile = function(fileName) {
+            uploadedFiles = uploadedFiles.filter(f => f !== fileName);
+            const server = servers.find(s => s.id === currentServerId);
+            if (server) server.files = [...uploadedFiles];
+            renderFiles();
+        };
 
-            if (!activeFile) {
-                editorFileName.textContent = '📄 محرر';
-                editorStatus.textContent = '⏸️ لا يوجد ملف';
-                return;
-            }
-
-            const isImg = isImageFile(activeFile);
-
-            if (isImg) {
-                previewImage.style.display = 'flex';
-                previewImg.src = activeFile.content || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Crect width="200" height="200" fill="%2321262d"/%3E%3Ctext x="50" y="110" fill="%238b949e" font-size="16"%3E🖼️ صورة%3C/text%3E%3C/svg%3E';
-                editorFileName.textContent = `🖼️ ${activeFile.name}`;
-                editorStatus.textContent = '🖼️ معاينة';
-                emptyEditorMsg.style.display = 'none';
-                const parent = getParent(activeFile, root);
-                statusRight.textContent = `📂 ${parent ? parent.name : 'الجذر'} / ${activeFile.name}`;
-                return;
-            }
-
-            editor.style.display = 'block';
-            editor.value = activeFile.content || '';
-            emptyEditorMsg.style.display = 'none';
-            editorFileName.textContent = `📄 ${activeFile.name}`;
-            editorStatus.textContent = '✏️ جاهز';
-            const parent = getParent(activeFile, root);
-            statusRight.textContent = `📂 ${parent ? parent.name : 'الجذر'} / ${activeFile.name}`;
-        }
-
-        // ---------- تحديث الحالة ----------
-        function updateStatus() {
-            const totalFiles = countAllFiles(root);
-            const totalFolders = countFolders(root);
-            statusLeft.textContent = `📊 ${totalFolders} مجلد · ${totalFiles} ملف`;
-            if (activeFile) {
-                statusLeft.textContent += ` · مفتوح: ${activeFile.name}`;
-            }
-            if (currentFolder) {
-                statusRight.textContent = `📂 ${currentFolder.name}`;
-            }
-        }
-
-        function countAllFiles(node) {
-            let count = 0;
-            if (node.type === 'file') count++;
-            if (node.children) {
-                for (let child of node.children) {
-                    count += countAllFiles(child);
+        // رفع ملفات
+        function handleFileUpload(files) {
+            for (let f of files) {
+                if (!uploadedFiles.includes(f.name)) {
+                    uploadedFiles.push(f.name);
                 }
             }
-            return count;
+            renderFiles();
+            const server = servers.find(s => s.id === currentServerId);
+            if (server) server.files = [...uploadedFiles];
         }
 
-        // ---------- حفظ تلقائي ----------
-        function autoSave() {
-            if (!activeFile || isImageFile(activeFile)) return;
-            activeFile.content = editor.value;
-            activeFile.size = fakeSize(activeFile.content);
-            activeFile.modified = now();
-            editorStatus.textContent = '✅ حفظ';
+        uploadFileBtn.addEventListener('click', () => fileInput.click());
+        uploadMoreBtn.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', (e) => {
+            handleFileUpload(e.target.files);
+            fileInput.value = '';
+        });
+
+        // سحب وإفلات
+        const uploadArea = document.getElementById('fileUploadArea');
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            handleFileUpload(e.dataTransfer.files);
+        });
+
+        // التنقل بين الخطوات
+        function goToStep(step) {
+            currentStep = step;
+            stepButtons.forEach((btn, idx) => {
+                btn.classList.remove('active-btn');
+                if (idx === step) btn.classList.add('active-btn');
+            });
+            stepPanels.forEach((panel, idx) => {
+                panel.classList.remove('active');
+                if (idx === step) panel.classList.add('active');
+            });
+        }
+
+        stepButtons.forEach((btn, idx) => {
+            btn.addEventListener('click', () => goToStep(idx));
+        });
+
+        step0Next.addEventListener('click', () => goToStep(1));
+        step1Prev.addEventListener('click', () => goToStep(0));
+        step1Next.addEventListener('click', () => goToStep(2));
+        step2Prev.addEventListener('click', () => goToStep(1));
+        step2Next.addEventListener('click', () => goToStep(3));
+        step3Prev.addEventListener('click', () => goToStep(2));
+
+        // تشغيل السيرفر
+        startServerBtn.addEventListener('click', () => {
+            startStatus.textContent = '⏳ جاري تشغيل السيرفر...';
             setTimeout(() => {
-                if (activeFile && !isImageFile(activeFile)) editorStatus.textContent = '✏️ جاهز';
-            }, 600);
-        }
-
-        // ---------- إعادة التسمية ----------
-        function openRenameModal(type, node) {
-            renameTarget = { type, node };
-            renameTitle.textContent = type === 'file' ? `إعادة تسمية الملف: ${node.name}` : `إعادة تسمية المجلد: ${node.name}`;
-            renameInput.value = node.name;
-            renameModal.classList.add('active');
-            renameInput.focus();
-            renameInput.select();
-        }
-
-        function closeRenameModal() {
-            renameModal.classList.remove('active');
-            renameTarget = null;
-        }
-
-        function confirmRename() {
-            if (!renameTarget) return;
-            const newName = renameInput.value.trim();
-            if (!newName) {
-                alert('الاسم لا يمكن أن يكون فارغاً');
-                return;
-            }
-            const { type, node } = renameTarget;
-            // التحقق من التكرار
-            const parent = getParent(node, root);
-            if (parent) {
-                const exists = parent.children.some(c => c.id !== node.id && c.name === newName && c.type === type);
-                if (exists) {
-                    alert(`يوجد ${type === 'file' ? 'ملف' : 'مجلد'} بنفس الاسم.`);
-                    return;
+                const server = servers.find(s => s.id === currentServerId);
+                if (server) {
+                    server.status = 'online';
+                    startStatus.innerHTML = '✅ السيرفر يعمل بنجاح!';
+                    appendToTerminal(`🟢 تم تشغيل البوت`, 'output');
+                    appendToTerminal(`📲 رمز QR: ██████████████████████████████`, 'qr-line');
+                    appendToTerminal(`تم إرسال رسالة: "البوت جاهز للربط"`, 'info');
+                    renderServers();
                 }
+            }, 1500);
+        });
+
+        // إضافة نص للتيرمنال
+        function appendToTerminal(text, className = '') {
+            const line = document.createElement('div');
+            if (className) {
+                line.className = className;
             }
-            node.name = newName;
-            if (type === 'file' && activeFile && activeFile.id === node.id) {
-                // تحديث المحرر
-                renderEditor();
-            }
-            closeRenameModal();
-            renderAll();
+            line.textContent = `[${new Date().toLocaleTimeString()}] ${text}`;
+            terminalOutput.appendChild(line);
+            terminalOutput.scrollTop = terminalOutput.scrollHeight;
         }
 
-        // ---------- رفع الملفات ----------
-        function handleUpload(files) {
-            if (!files || files.length === 0) return;
-            for (let file of files) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    let content = e.target.result;
-                    let size = formatSize(file.size);
-                    const isImg = file.type.startsWith('image/');
-                    // إذا كانت صورة نخزنها كـ base64
-                    if (isImg) {
-                        content = e.target.result; // base64
-                    } else {
-                        // ملف نصي
-                        content = e.target.result;
-                    }
-                    const newFile = {
-                        id: genId(),
-                        name: file.name,
-                        type: 'file',
-                        content: content,
-                        size: size,
-                        modified: now()
-                    };
-                    if (!currentFolder.children) currentFolder.children = [];
-                    currentFolder.children.push(newFile);
-                    renderAll();
-                };
-                if (file.type.startsWith('image/') || file.type.startsWith('text/')) {
-                    reader.readAsDataURL(file);
+        // تثبيت المكتبات
+        installLibsBtn.addEventListener('click', () => {
+            if (autoLibs.checked) {
+                libsStatus.textContent = '⏳ جاري التثبيت التلقائي...';
+                setTimeout(() => {
+                    libsStatus.textContent = '✅ تم تثبيت جميع المكتبات تلقائياً';
+                    appendToTerminal(`📦 تم تثبيت المكتبات تلقائياً: whatsapp-web.js, qrcode, ...`, 'output');
+                }, 1500);
+            } else if (manualLibs.checked) {
+                libsStatus.textContent = '📦 اخترت التثبيت اليدوي. استخدم Terminal';
+                appendToTerminal(`🛠️ التثبيت اليدوي: اكتب أمر التثبيت في Terminal`, 'info');
+            } else {
+                libsStatus.textContent = '⚠️ يرجى اختيار طريقة التثبيت.';
+            }
+        });
+
+        // إرسال أوامر Terminal
+        sendCommandBtn.addEventListener('click', () => {
+            const cmd = terminalInput.value.trim();
+            if (!cmd) return;
+            
+            // عرض الأمر
+            const promptLine = document.createElement('div');
+            promptLine.innerHTML = `<span class="prompt">$</span> <span class="command">${cmd}</span>`;
+            terminalOutput.appendChild(promptLine);
+            
+            // محاكاة الرد
+            setTimeout(() => {
+                if (cmd.includes('npm install')) {
+                    appendToTerminal(`✅ تم تثبيت الحزمة (محاكاة)`, 'output');
+                } else if (cmd.includes('help')) {
+                    appendToTerminal(`📚 الأوامر المتاحة: npm install, start, status, help`, 'info');
+                } else if (cmd.includes('start')) {
+                    appendToTerminal(`🚀 جاري تشغيل البوت...`, 'info');
+                    setTimeout(() => {
+                        appendToTerminal(`📲 رمز QR: ██████████████████████████████`, 'qr-line');
+                    }, 500);
+                } else if (cmd.includes('status')) {
+                    const server = servers.find(s => s.id === currentServerId);
+                    appendToTerminal(`📊 حالة السيرفر: ${server ? server.status : 'غير معروف'}`, 'info');
                 } else {
-                    // ملفات غير نصية نخزنها كنص (للمثال فقط)
-                    reader.readAsText(file);
+                    appendToTerminal(`✅ تم تنفيذ الأمر: ${cmd}`, 'output');
                 }
+                terminalOutput.scrollTop = terminalOutput.scrollHeight;
+            }, 300);
+            
+            terminalInput.value = '';
+            terminalOutput.scrollTop = terminalOutput.scrollHeight;
+        });
+
+        // Enter في حقل التيرمنال
+        terminalInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendCommandBtn.click();
             }
-            statusLeft.textContent = `📤 تم رفع ${files.length} ملف`;
-            setTimeout(updateStatus, 1500);
-        }
+        });
 
-        // ---------- إعادة رسم كل شيء ----------
-        function renderAll() {
-            renderTree();
-            renderFiles();
-            renderEditor();
-            updateStatus();
-        }
+        // تبديل حالة السيرفر
+        window.toggleStatus = function(id) {
+            const server = servers.find(s => s.id === id);
+            if (server) {
+                server.status = server.status === 'online' ? 'offline' : 'online';
+                renderServers();
+            }
+        };
 
-        // ---------- العمليات ----------
-        function addFolder() {
-            const name = prompt('اسم المجلد الجديد:');
-            if (!name || name.trim() === '') return;
-            if (currentFolder.children && currentFolder.children.some(c => c.type === 'folder' && c.name === name.trim())) {
-                alert('يوجد مجلد بنفس الاسم.');
+        // إنشاء سيرفر جديد
+        createServerBtn.addEventListener('click', () => {
+            createModal.classList.add('active');
+            serverNameInput.value = '';
+            serverUserInput.value = '';
+        });
+
+        cancelModalBtn.addEventListener('click', () => createModal.classList.remove('active'));
+        confirmCreateBtn.addEventListener('click', () => {
+            const name = serverNameInput.value.trim();
+            const user = serverUserInput.value.trim();
+            if (!name || !user) {
+                alert('يرجى إدخال اسم السيرفر واسم المستخدم');
                 return;
             }
-            const newFolder = {
-                id: genId(),
-                name: name.trim(),
-                type: 'folder',
-                children: []
+            const newServer = {
+                id: Date.now(),
+                name,
+                username: user,
+                status: 'offline',
+                files: []
             };
-            if (!currentFolder.children) currentFolder.children = [];
-            currentFolder.children.push(newFolder);
-            renderAll();
-        }
-
-        function addFile() {
-            const name = prompt('اسم الملف (مع الامتداد):');
-            if (!name || name.trim() === '') return;
-            if (currentFolder.children && currentFolder.children.some(c => c.type === 'file' && c.name === name.trim())) {
-                alert('يوجد ملف بنفس الاسم.');
-                return;
-            }
-            const newFile = {
-                id: genId(),
-                name: name.trim(),
-                type: 'file',
-                content: '',
-                size: '0 B',
-                modified: now()
-            };
-            if (!currentFolder.children) currentFolder.children = [];
-            currentFolder.children.push(newFile);
-            activeFile = newFile;
-            renderAll();
-            if (!isImageFile(newFile)) {
-                setTimeout(() => editor.focus(), 100);
-            }
-        }
-
-        function deleteSelected() {
-            if (!activeFile) {
-                alert('اختر ملفاً أولاً من الجدول.');
-                return;
-            }
-            if (!confirm(`هل تريد حذف "${activeFile.name}" نهائياً؟`)) return;
-            const parent = getParent(activeFile, root);
-            if (!parent) return;
-            parent.children = parent.children.filter(c => c.id !== activeFile.id);
-            activeFile = null;
-            renderAll();
-        }
-
-        // ---------- ربط الأحداث ----------
-        addFolderBtn.addEventListener('click', addFolder);
-        addFileBtn.addEventListener('click', addFile);
-        deleteBtn.addEventListener('click', deleteSelected);
-        refreshBtn.addEventListener('click', () => {
-            renderAll();
-            statusLeft.textContent = '🔄 تم التحديث';
-            setTimeout(updateStatus, 500);
+            servers.push(newServer);
+            renderServers();
+            createModal.classList.remove('active');
+            openServer(newServer.id);
         });
 
-        uploadInput.addEventListener('change', (e) => {
-            handleUpload(e.target.files);
-            uploadInput.value = '';
-        });
-
-        renameCancel.addEventListener('click', closeRenameModal);
-        renameConfirm.addEventListener('click', confirmRename);
-        renameInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') confirmRename();
-            if (e.key === 'Escape') closeRenameModal();
-        });
-        renameModal.addEventListener('click', (e) => {
-            if (e.target === renameModal) closeRenameModal();
-        });
-
-        editor.addEventListener('input', autoSave);
-        editor.addEventListener('blur', autoSave);
-        setInterval(autoSave, 3000);
-
-        document.addEventListener('keydown', (e) => {
-            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-                e.preventDefault();
-                autoSave();
-                statusLeft.textContent = '✅ حفظ';
-                setTimeout(updateStatus, 800);
+        // عرض سيرفراتي
+        myServersBtn.addEventListener('click', () => {
+            if (serverPage.classList.contains('active')) {
+                serverPage.classList.remove('active');
+                mainView.style.display = 'block';
+            } else {
+                mainView.style.display = 'block';
+                serverPage.classList.remove('active');
             }
         });
 
-        searchInput.addEventListener('input', (e) => {
-            searchQuery = e.target.value;
-            renderFiles();
-        });
-
-        // ---------- التهيئة ----------
-        renderAll();
-        statusLeft.textContent = '🚀 جاهز (اسحب وأفلت · ارفع ملفات · أعد التسمية)';
-
-        console.log('✅ مدير الملفات الكامل يعمل!');
-    })();
-</script>
+        // بداية
+        renderServers();
+        console.log('🚀 موقع استضافة بوتات واتساب جاهز!');
+    </script>
 </body>
-  </html>
+</html>
