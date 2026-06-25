@@ -336,7 +336,7 @@
             padding: 1.2rem 1.5rem;
             font-family: 'Fira Code', 'Cascadia Code', 'Consolas', 'Monaco', monospace;
             font-size: 14px;
-            line-height: 1.6;
+            line-height: 1.8;
             color: #e5e9f0;
             min-height: 400px;
             max-height: 500px;
@@ -377,14 +377,30 @@
         .terminal-box .info {
             color: #81d4fa;
         }
+        .terminal-box .bot-message {
+            color: #ffd54f;
+            background: rgba(255, 213, 79, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+            border-right: 3px solid #ffd54f;
+        }
+        .terminal-box .bot-qr {
+            color: #4fc3f7;
+            font-weight: bold;
+            letter-spacing: 2px;
+            background: rgba(79, 195, 247, 0.1);
+            padding: 4px 12px;
+            border-radius: 4px;
+            display: inline-block;
+            margin: 4px 0;
+        }
         .terminal-input-row {
             display: flex;
             gap: 10px;
-            margin-top: 1rem;
-            padding: 0 0.5rem 0.5rem 0.5rem;
+            margin-top: 0;
+            padding: 0.8rem 1.2rem;
             background: #0a0e14;
             border-top: 1px solid #1e2733;
-            padding-top: 0.8rem;
         }
         .terminal-input-row input {
             flex: 1;
@@ -599,10 +615,10 @@
                                     <span class="dot yellow"></span>
                                     <span class="dot green"></span>
                                 </div>
-                                <span class="terminal-title">bash — bot@server:~/bot</span>
+                                <span class="terminal-title" id="terminalTitle">bash — bot@server:~/bot</span>
                             </div>
                             <div class="terminal-box" id="terminalOutput">
-                                <span class="text-muted">[Terminal] السيرفر جاهز... سيظهر الـ QR أو رسائل البوت هنا.</span>
+                                <div class="info">[Terminal] السيرفر جاهز...</div>
                             </div>
                             <div class="terminal-input-row">
                                 <input type="text" id="terminalInput" placeholder="اكتب أمراً..." />
@@ -642,6 +658,8 @@
         let currentServerId = null;
         let uploadedFiles = [];
         let currentStep = 0;
+        let botInterval = null;
+        let isBotRunning = false;
 
         // عناصر DOM
         const serversGrid = document.getElementById('serversGrid');
@@ -669,6 +687,7 @@
         const terminalOutput = document.getElementById('terminalOutput');
         const terminalInput = document.getElementById('terminalInput');
         const sendCommandBtn = document.getElementById('sendCommandBtn');
+        const terminalTitle = document.getElementById('terminalTitle');
 
         // أزرار التنقل
         const stepButtons = document.querySelectorAll('.nav-buttons button');
@@ -701,26 +720,132 @@
             });
         }
 
+        // إضافة نص للتيرمنال
+        function appendToTerminal(text, className = '') {
+            const line = document.createElement('div');
+            if (className) {
+                line.className = className;
+            }
+            const timestamp = new Date().toLocaleTimeString();
+            line.textContent = `[${timestamp}] ${text}`;
+            terminalOutput.appendChild(line);
+            terminalOutput.scrollTop = terminalOutput.scrollHeight;
+        }
+
+        // محاكاة رسائل البوت
+        function startBotSimulation() {
+            if (botInterval) {
+                clearInterval(botInterval);
+                botInterval = null;
+            }
+            
+            isBotRunning = true;
+            const botMessages = [
+                '🤖 البوت جاهز للربط',
+                '📱 جاري الاتصال بالواتساب...',
+                '✅ تم الاتصال بنجاح',
+                '📩 تم استقبال رسالة جديدة: "مرحباً"',
+                '📤 تم إرسال رد: "أهلاً بك!"',
+                '🔄 جاري مزامنة الرسائل...',
+                '📊 تم تحديث الحالة',
+                '🔔 تنبيه: مستخدم جديد انضم',
+                '📨 رسالة واردة: "كيف الحال؟"',
+                '📤 تم إرسال رد: "بخير، شكراً!"'
+            ];
+            
+            let messageIndex = 0;
+            
+            // أول رسالة فورية
+            setTimeout(() => {
+                appendToTerminal('🤖 البوت يعمل الآن!', 'bot-message');
+                appendToTerminal('📲 رمز QR للربط:', 'info');
+                appendToTerminal('██████████████████████████████████', 'bot-qr');
+                appendToTerminal('🔗 رابط الربط: https://wa.me/qr/XXXXXXXXXX', 'info');
+            }, 1000);
+            
+            // رسائل دورية
+            botInterval = setInterval(() => {
+                if (messageIndex < botMessages.length) {
+                    const msg = botMessages[messageIndex];
+                    if (msg.includes('QR') || msg.includes('ربط')) {
+                        appendToTerminal(msg, 'bot-qr');
+                    } else if (msg.includes('رسالة') || msg.includes('رد')) {
+                        appendToTerminal(msg, 'bot-message');
+                    } else {
+                        appendToTerminal(msg, 'output');
+                    }
+                    messageIndex++;
+                } else {
+                    // رسائل عشوائية بعد انتهاء القائمة
+                    const randomMsgs = [
+                        '📩 رسالة جديدة من واتساب: "السلام عليكم"',
+                        '📤 تم إرسال رد: "وعليكم السلام ورحمة الله"',
+                        '🔄 جاري تحديث قاعدة البيانات...',
+                        '✅ تم تحديث 5 محادثات',
+                        '🔔 إشعار: تم ربط البوت بنجاح',
+                        '📊 عدد المستخدمين: 42',
+                        '💾 جاري حفظ السجلات...'
+                    ];
+                    const randomMsg = randomMsgs[Math.floor(Math.random() * randomMsgs.length)];
+                    if (randomMsg.includes('رسالة') || randomMsg.includes('رد')) {
+                        appendToTerminal(randomMsg, 'bot-message');
+                    } else {
+                        appendToTerminal(randomMsg, 'output');
+                    }
+                }
+            }, 5000);
+        }
+
+        // إيقاف البوت
+        function stopBotSimulation() {
+            if (botInterval) {
+                clearInterval(botInterval);
+                botInterval = null;
+            }
+            isBotRunning = false;
+            appendToTerminal('⏹️ تم إيقاف البوت', 'error');
+        }
+
         // فتح صفحة السيرفر
         window.openServer = function(id) {
             currentServerId = id;
             const server = servers.find(s => s.id === id);
             if (!server) return;
+            
             serverPageTitle.innerHTML = `<i class="fas fa-server"></i> ${server.name} (${server.username})`;
             uploadedFiles = [...server.files];
             renderFiles();
             mainView.style.display = 'none';
             serverPage.classList.add('active');
             goToStep(0);
-            terminalOutput.innerHTML = `<span class="info">[Terminal] جاهز للسيرفر: ${server.name}</span>\n`;
+            
+            // تنظيف التيرمنال
+            terminalOutput.innerHTML = '';
+            appendToTerminal(`السيرفر جاهز: ${server.name}`, 'info');
+            appendToTerminal(`@${server.username}`, 'info');
+            appendToTerminal('---', 'info');
+            
+            // تحديث عنوان التيرمنال
+            terminalTitle.textContent = `bash — ${server.username}@server:~/bot`;
+            
             startStatus.textContent = '';
             libsStatus.textContent = '';
-            // تحديث عنوان التيرمنال
-            document.querySelector('.terminal-title').textContent = `bash — ${server.username}@server:~/bot`;
+            
+            // إذا كان السيرفر شغال، بدء المحاكاة
+            if (server.status === 'online') {
+                setTimeout(() => {
+                    startBotSimulation();
+                }, 500);
+            }
         };
 
         // رجوع للرئيسية
         backToMainBtn.addEventListener('click', () => {
+            if (botInterval) {
+                clearInterval(botInterval);
+                botInterval = null;
+            }
+            isBotRunning = false;
             serverPage.classList.remove('active');
             mainView.style.display = 'block';
             currentServerId = null;
@@ -759,12 +884,15 @@
             renderFiles();
             const server = servers.find(s => s.id === currentServerId);
             if (server) server.files = [...uploadedFiles];
+            appendToTerminal(`📁 تم رفع الملف: ${files[0].name}`, 'output');
         }
 
         uploadFileBtn.addEventListener('click', () => fileInput.click());
         uploadMoreBtn.addEventListener('click', () => fileInput.click());
         fileInput.addEventListener('change', (e) => {
-            handleFileUpload(e.target.files);
+            if (e.target.files.length > 0) {
+                handleFileUpload(e.target.files);
+            }
             fileInput.value = '';
         });
 
@@ -780,7 +908,9 @@
         uploadArea.addEventListener('drop', (e) => {
             e.preventDefault();
             uploadArea.classList.remove('dragover');
-            handleFileUpload(e.dataTransfer.files);
+            if (e.dataTransfer.files.length > 0) {
+                handleFileUpload(e.dataTransfer.files);
+            }
         });
 
         // التنقل بين الخطوات
@@ -809,30 +939,37 @@
 
         // تشغيل السيرفر
         startServerBtn.addEventListener('click', () => {
-            startStatus.textContent = '⏳ جاري تشغيل السيرفر...';
-            setTimeout(() => {
-                const server = servers.find(s => s.id === currentServerId);
-                if (server) {
-                    server.status = 'online';
-                    startStatus.innerHTML = '✅ السيرفر يعمل بنجاح!';
-                    appendToTerminal(`🟢 تم تشغيل البوت`, 'output');
-                    appendToTerminal(`📲 رمز QR: ██████████████████████████████`, 'qr-line');
-                    appendToTerminal(`تم إرسال رسالة: "البوت جاهز للربط"`, 'info');
-                    renderServers();
-                }
-            }, 1500);
-        });
-
-        // إضافة نص للتيرمنال
-        function appendToTerminal(text, className = '') {
-            const line = document.createElement('div');
-            if (className) {
-                line.className = className;
+            const server = servers.find(s => s.id === currentServerId);
+            if (!server) return;
+            
+            if (server.status === 'online') {
+                startStatus.innerHTML = '⚠️ السيرفر يعمل بالفعل';
+                return;
             }
-            line.textContent = `[${new Date().toLocaleTimeString()}] ${text}`;
-            terminalOutput.appendChild(line);
-            terminalOutput.scrollTop = terminalOutput.scrollHeight;
-        }
+            
+            startStatus.textContent = '⏳ جاري تشغيل السيرفر...';
+            
+            setTimeout(() => {
+                server.status = 'online';
+                startStatus.innerHTML = '✅ السيرفر يعمل بنجاح!';
+                renderServers();
+                
+                // بدء محاكاة البوت
+                startBotSimulation();
+                
+                // إظهار رسالة في التيرمنال
+                appendToTerminal('🚀 تم تشغيل البوت بنجاح', 'output');
+                appendToTerminal('📲 جاري تحميل رمز QR...', 'info');
+                
+                setTimeout(() => {
+                    appendToTerminal('📲 رمز QR:', 'info');
+                    appendToTerminal('██████████████████████████████████', 'bot-qr');
+                    appendToTerminal('🔗 رابط الربط: https://wa.me/qr/BOT123456', 'info');
+                    appendToTerminal('✅ البوت جاهز للاستخدام', 'bot-message');
+                }, 1500);
+                
+            }, 2000);
+        });
 
         // تثبيت المكتبات
         installLibsBtn.addEventListener('click', () => {
@@ -840,11 +977,15 @@
                 libsStatus.textContent = '⏳ جاري التثبيت التلقائي...';
                 setTimeout(() => {
                     libsStatus.textContent = '✅ تم تثبيت جميع المكتبات تلقائياً';
-                    appendToTerminal(`📦 تم تثبيت المكتبات تلقائياً: whatsapp-web.js, qrcode, ...`, 'output');
-                }, 1500);
+                    appendToTerminal('📦 تم تثبيت المكتبات تلقائياً', 'output');
+                    appendToTerminal('✅ whatsapp-web.js@latest', 'output');
+                    appendToTerminal('✅ qrcode@latest', 'output');
+                    appendToTerminal('✅ @whiskey/repl@latest', 'output');
+                }, 2000);
             } else if (manualLibs.checked) {
                 libsStatus.textContent = '📦 اخترت التثبيت اليدوي. استخدم Terminal';
-                appendToTerminal(`🛠️ التثبيت اليدوي: اكتب أمر التثبيت في Terminal`, 'info');
+                appendToTerminal('🛠️ التثبيت اليدوي: استخدم npm install package-name', 'info');
+                appendToTerminal('📝 مثال: npm install whatsapp-web.js', 'info');
             } else {
                 libsStatus.textContent = '⚠️ يرجى اختيار طريقة التثبيت.';
             }
@@ -859,21 +1000,60 @@
             const promptLine = document.createElement('div');
             promptLine.innerHTML = `<span class="prompt">$</span> <span class="command">${cmd}</span>`;
             terminalOutput.appendChild(promptLine);
+            terminalOutput.scrollTop = terminalOutput.scrollHeight;
             
             // محاكاة الرد
             setTimeout(() => {
                 if (cmd.includes('npm install')) {
-                    appendToTerminal(`✅ تم تثبيت الحزمة (محاكاة)`, 'output');
-                } else if (cmd.includes('help')) {
-                    appendToTerminal(`📚 الأوامر المتاحة: npm install, start, status, help`, 'info');
-                } else if (cmd.includes('start')) {
-                    appendToTerminal(`🚀 جاري تشغيل البوت...`, 'info');
+                    const packageName = cmd.replace('npm install', '').trim() || 'package';
+                    appendToTerminal(`📦 جاري تثبيت ${packageName}...`, 'info');
                     setTimeout(() => {
-                        appendToTerminal(`📲 رمز QR: ██████████████████████████████`, 'qr-line');
+                        appendToTerminal(`✅ تم تثبيت ${packageName} بنجاح`, 'output');
+                    }, 1000);
+                } else if (cmd.includes('help') || cmd === '?') {
+                    appendToTerminal('📚 الأوامر المتاحة:', 'info');
+                    appendToTerminal('  npm install <package>  - تثبيت مكتبة', 'output');
+                    appendToTerminal('  start                  - تشغيل البوت', 'output');
+                    appendToTerminal('  status                 - عرض حالة السيرفر', 'output');
+                    appendToTerminal('  stop                   - إيقاف البوت', 'output');
+                    appendToTerminal('  help                   - عرض هذه المساعدة', 'output');
+                } else if (cmd === 'start') {
+                    appendToTerminal('🚀 جاري تشغيل البوت...', 'info');
+                    setTimeout(() => {
+                        const server = servers.find(s => s.id === currentServerId);
+                        if (server) {
+                            server.status = 'online';
+                            renderServers();
+                            startBotSimulation();
+                            appendToTerminal('✅ تم تشغيل البوت بنجاح', 'output');
+                            appendToTerminal('شغال:', 'info');
+                            appendToTerminal('██████████████████████████████████', 'bot-qr');
+                        }
+                    }, 1000);
+                } else if (cmd === 'stop') {
+                    appendToTerminal('⏹️ جاري إيقاف البوت...', 'info');
+                    setTimeout(() => {
+                        const server = servers.find(s => s.id === currentServerId);
+                        if (server) {
+                            server.status = 'offline';
+                            renderServers();
+                            stopBotSimulation();
+                            appendToTerminal('✅ تم إيقاف البوت', 'error');
+                        }
                     }, 500);
-                } else if (cmd.includes('status')) {
+                } else if (cmd === 'status') {
                     const server = servers.find(s => s.id === currentServerId);
                     appendToTerminal(`📊 حالة السيرفر: ${server ? server.status : 'غير معروف'}`, 'info');
+                    if (server && server.status === 'online') {
+                        appendToTerminal('✅ البوت يعمل بشكل طبيعي', 'output');
+                        appendToTerminal('📱 متصل بالواتساب', 'output');
+                        appendToTerminal('👥 عدد المستخدمين: 42', 'output');
+                    } else {
+                        appendToTerminal('⏹️ البوت متوقف', 'error');
+                    }
+                } else if (cmd === 'clear' || cmd === 'cls') {
+                    terminalOutput.innerHTML = '';
+                    appendToTerminal('🧹 تم مسح الشاشة', 'info');
                 } else {
                     appendToTerminal(`✅ تم تنفيذ الأمر: ${cmd}`, 'output');
                 }
@@ -896,6 +1076,12 @@
             const server = servers.find(s => s.id === id);
             if (server) {
                 server.status = server.status === 'online' ? 'offline' : 'online';
+                if (server.status === 'offline' && currentServerId === id) {
+                    stopBotSimulation();
+                }
+                if (server.status === 'online' && currentServerId === id) {
+                    startBotSimulation();
+                }
                 renderServers();
             }
         };
@@ -930,6 +1116,11 @@
 
         // عرض سيرفراتي
         myServersBtn.addEventListener('click', () => {
+            if (botInterval) {
+                clearInterval(botInterval);
+                botInterval = null;
+            }
+            isBotRunning = false;
             if (serverPage.classList.contains('active')) {
                 serverPage.classList.remove('active');
                 mainView.style.display = 'block';
