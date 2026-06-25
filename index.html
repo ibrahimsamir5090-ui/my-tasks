@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>استضافة بوتات واتساب - منصة السيرفرات</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -140,8 +141,11 @@
         .modal-overlay {
             display: none;
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7);
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
             backdrop-filter: blur(4px);
             justify-content: center;
             align-items: center;
@@ -155,7 +159,7 @@
             max-width: 500px;
             width: 90%;
             border: 1px solid #2a313c;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.7);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
         }
         .modal h2 {
             margin-bottom: 1.5rem;
@@ -206,7 +210,7 @@
             color: #e5e9f0;
         }
         .modal .modal-actions .btn-cancel:hover { background: #3b4554; }
-        
+
         /* صفحة السيرفر */
         .server-page {
             display: none;
@@ -221,7 +225,7 @@
             flex-wrap: wrap;
         }
         .server-page .header h1 { color: #4fc3f7; }
-        
+
         .file-upload-area {
             background: #141a24;
             border: 2px dashed #2a313c;
@@ -261,7 +265,7 @@
             align-items: center;
             gap: 8px;
         }
-        
+
         .nav-buttons {
             display: flex;
             gap: 15px;
@@ -285,7 +289,7 @@
             background: #0d47a1;
             color: white;
         }
-        
+
         .step-content {
             background: #141a24;
             border-radius: 20px;
@@ -295,14 +299,14 @@
         }
         .step-content .step-panel { display: none; }
         .step-content .step-panel.active { display: block; }
-        
-        /* تيرمنال بحجم تيرمكس */
+
+        /* تيرمنال */
         .terminal-wrapper {
             background: #0a0e14;
             border-radius: 12px;
             border: 1px solid #1e2733;
             overflow: hidden;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
         }
         .terminal-header {
             background: #141a24;
@@ -363,36 +367,48 @@
         .terminal-box .command {
             color: #e5e9f0;
         }
-        .terminal-box .output {
-            color: #a5d6a7;
-        }
-        .terminal-box .qr-line {
-            color: #4fc3f7;
-            font-weight: bold;
-            letter-spacing: 2px;
-        }
-        .terminal-box .error {
-            color: #ef9a9a;
-        }
-        .terminal-box .info {
-            color: #81d4fa;
-        }
         .terminal-box .bot-message {
             color: #ffd54f;
             background: rgba(255, 213, 79, 0.1);
             padding: 2px 8px;
             border-radius: 4px;
             border-right: 3px solid #ffd54f;
+            margin: 2px 0;
         }
-        .terminal-box .bot-qr {
-            color: #4fc3f7;
-            font-weight: bold;
-            letter-spacing: 2px;
-            background: rgba(79, 195, 247, 0.1);
+        .terminal-box .bot-error {
+            color: #ef9a9a;
+            background: rgba(239, 154, 154, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+            border-right: 3px solid #ef9a9a;
+            margin: 2px 0;
+        }
+        .terminal-box .bot-info {
+            color: #81d4fa;
+            background: rgba(129, 212, 250, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+            border-right: 3px solid #81d4fa;
+            margin: 2px 0;
+        }
+        .terminal-box .bot-success {
+            color: #a5d6a7;
+            background: rgba(165, 214, 167, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+            border-right: 3px solid #a5d6a7;
+            margin: 2px 0;
+        }
+        .terminal-box .bot-code {
+            color: #ce93d8;
+            background: rgba(206, 147, 216, 0.1);
             padding: 4px 12px;
             border-radius: 4px;
             display: inline-block;
             margin: 4px 0;
+            font-weight: bold;
+            letter-spacing: 1px;
+            border: 1px dashed #ce93d8;
         }
         .terminal-input-row {
             display: flex;
@@ -435,7 +451,7 @@
         .terminal-input-row button:hover {
             background: #1565c0;
         }
-        
+
         .options-box {
             display: flex;
             flex-direction: column;
@@ -465,7 +481,20 @@
             width: fit-content;
         }
         .start-btn:hover { background: #388e3c; }
-        
+        .stop-btn {
+            background: #c62828;
+            color: white;
+            border: none;
+            padding: 1rem 2.5rem;
+            border-radius: 60px;
+            font-weight: 700;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: 0.2s;
+            width: fit-content;
+        }
+        .stop-btn:hover { background: #d32f2f; }
+
         .step-actions {
             display: flex;
             justify-content: flex-end;
@@ -490,17 +519,27 @@
             color: #e5e9f0;
         }
         .step-actions .btn-prev:hover { background: #3b4554; }
-        
+
         .hidden { display: none !important; }
         .text-muted { color: #8a94a6; }
         .mt-2 { margin-top: 2rem; }
         .mb-1 { margin-bottom: 1rem; }
-        .flex-center { display: flex; justify-content: center; }
+        .flex-center { display: flex;
+            justify-content: center; }
         .gap-1 { gap: 1rem; }
-        .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
-        
+        .flex-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
         @media (max-width: 600px) {
-            .navbar { flex-direction: column; gap: 10px; align-items: stretch; }
+            .navbar {
+                flex-direction: column;
+                gap: 10px;
+                align-items: stretch;
+            }
             .user-area { justify-content: center; }
             .container { padding: 0 1rem; }
             .nav-buttons button { min-width: 100%; }
@@ -578,7 +617,10 @@
                     <div class="options-box">
                         <h3><i class="fas fa-play-circle"></i> تشغيل السيرفر</h3>
                         <p>اضغط على زر التشغيل لبدء البوت</p>
-                        <button class="start-btn" id="startServerBtn"><i class="fas fa-play"></i> تشغيل السيرفر</button>
+                        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                            <button class="start-btn" id="startServerBtn"><i class="fas fa-play"></i> تشغيل السيرفر</button>
+                            <button class="stop-btn" id="stopServerBtn"><i class="fas fa-stop"></i> إيقاف السيرفر</button>
+                        </div>
                         <div id="startStatus" class="text-muted" style="margin-top:0.5rem;"></div>
                     </div>
                     <div class="step-actions">
@@ -618,7 +660,7 @@
                                 <span class="terminal-title" id="terminalTitle">bash — bot@server:~/bot</span>
                             </div>
                             <div class="terminal-box" id="terminalOutput">
-                                <div class="info">[Terminal] السيرفر جاهز...</div>
+                                <div class="bot-info">[Terminal] السيرفر جاهز...</div>
                             </div>
                             <div class="terminal-input-row">
                                 <input type="text" id="terminalInput" placeholder="اكتب أمراً..." />
@@ -651,17 +693,47 @@
 
     <script>
         // ============= البيانات =============
-        let servers = [
-            { id: 1, name: 'بوت التسويق', username: 'marketing_bot', status: 'online', files: ['bot.js', 'config.json'] },
-            { id: 2, name: 'بوت الدعم', username: 'support_bot', status: 'offline', files: ['app.js'] },
-        ];
+        let servers = [];
         let currentServerId = null;
         let uploadedFiles = [];
         let currentStep = 0;
-        let botInterval = null;
-        let isBotRunning = false;
 
-        // عناصر DOM
+        // ============= Socket.io =============
+        const socket = io('http://localhost:3000');
+        let currentBotId = null;
+
+        socket.on('connect', () => {
+            console.log('✅ متصل بالخادم');
+            appendToTerminal('🟢 تم الاتصال بالخادم', 'bot-success');
+            loadBots();
+        });
+
+        socket.on('bot-log', (log) => {
+            const className = log.type === 'qr' ? 'bot-code' :
+                log.type === 'success' ? 'bot-success' :
+                log.type === 'error' ? 'bot-error' :
+                log.type === 'message' ? 'bot-message' :
+                'bot-info';
+            appendToTerminal(`[${log.timestamp}] ${log.message}`, className);
+        });
+
+        socket.on('bot-qr', (qr) => {
+            appendToTerminal('📲 رمز QR:', 'bot-info');
+            appendToTerminal(qr, 'bot-code');
+        });
+
+        socket.on('bot-ready', (data) => {
+            appendToTerminal(`✅ البوت جاهز! رقم: ${data.wid}`, 'bot-success');
+            appendToTerminal(`👤 الاسم: ${data.name}`, 'bot-info');
+            const server = servers.find(s => s.id === currentServerId);
+            if (server) {
+                server.status = 'online';
+                renderServers();
+                document.getElementById('startStatus').innerHTML = '✅ السيرفر يعمل بنجاح!';
+            }
+        });
+
+        // ============= عناصر DOM =============
         const serversGrid = document.getElementById('serversGrid');
         const createModal = document.getElementById('createModal');
         const createServerBtn = document.getElementById('createServerBtn');
@@ -679,6 +751,7 @@
         const fileList = document.getElementById('fileList');
         const myServersBtn = document.getElementById('myServersBtn');
         const startServerBtn = document.getElementById('startServerBtn');
+        const stopServerBtn = document.getElementById('stopServerBtn');
         const startStatus = document.getElementById('startStatus');
         const autoLibs = document.getElementById('autoLibs');
         const manualLibs = document.getElementById('manualLibs');
@@ -699,23 +772,29 @@
         const step2Next = document.getElementById('step2Next');
         const step3Prev = document.getElementById('step3Prev');
 
+        // ============= الدوال الأساسية =============
+
         // عرض السيرفرات
         function renderServers() {
             serversGrid.innerHTML = '';
+            if (servers.length === 0) {
+                serversGrid.innerHTML = '<div class="text-muted" style="text-align:center;padding:3rem;">لا توجد سيرفرات، قم بإنشاء سيرفر جديد</div>';
+                return;
+            }
             servers.forEach(server => {
                 const card = document.createElement('div');
                 card.className = 'server-card';
                 card.innerHTML = `
-                    <div class="top">
-                        <span class="name"><i class="fas fa-server"></i> ${server.name}</span>
-                        <span class="status ${server.status === 'online' ? '' : 'off'}">${server.status === 'online' ? '🟢 نشط' : '🔴 متوقف'}</span>
-                    </div>
-                    <div style="font-size:0.9rem; color:#8a94a6; margin:0.5rem 0;">@${server.username}</div>
-                    <div class="actions">
-                        <button class="primary" onclick="openServer(${server.id})"><i class="fas fa-ellipsis-v"></i> ثلاث نقاط</button>
-                        <button onclick="toggleStatus(${server.id})"><i class="fas ${server.status === 'online' ? 'fa-pause' : 'fa-play'}"></i> ${server.status === 'online' ? 'إيقاف' : 'تشغيل'}</button>
-                    </div>
-                `;
+                        <div class="top">
+                            <span class="name"><i class="fas fa-server"></i> ${server.name}</span>
+                            <span class="status ${server.status === 'online' ? '' : 'off'}">${server.status === 'online' ? '🟢 نشط' : '🔴 متوقف'}</span>
+                        </div>
+                        <div style="font-size:0.9rem; color:#8a94a6; margin:0.5rem 0;">@${server.username}</div>
+                        <div class="actions">
+                            <button class="primary" onclick="openServer('${server.id}')"><i class="fas fa-ellipsis-v"></i> ثلاث نقاط</button>
+                            <button onclick="toggleStatus('${server.id}')"><i class="fas ${server.status === 'online' ? 'fa-pause' : 'fa-play'}"></i> ${server.status === 'online' ? 'إيقاف' : 'تشغيل'}</button>
+                        </div>
+                    `;
                 serversGrid.appendChild(card);
             });
         }
@@ -726,84 +805,14 @@
             if (className) {
                 line.className = className;
             }
-            const timestamp = new Date().toLocaleTimeString();
-            line.textContent = `[${timestamp}] ${text}`;
+            if (!text.includes('[')) {
+                const timestamp = new Date().toLocaleTimeString();
+                line.textContent = `[${timestamp}] ${text}`;
+            } else {
+                line.textContent = text;
+            }
             terminalOutput.appendChild(line);
             terminalOutput.scrollTop = terminalOutput.scrollHeight;
-        }
-
-        // محاكاة رسائل البوت
-        function startBotSimulation() {
-            if (botInterval) {
-                clearInterval(botInterval);
-                botInterval = null;
-            }
-            
-            isBotRunning = true;
-            const botMessages = [
-                '🤖 البوت جاهز للربط',
-                '📱 جاري الاتصال بالواتساب...',
-                '✅ تم الاتصال بنجاح',
-                '📩 تم استقبال رسالة جديدة: "مرحباً"',
-                '📤 تم إرسال رد: "أهلاً بك!"',
-                '🔄 جاري مزامنة الرسائل...',
-                '📊 تم تحديث الحالة',
-                '🔔 تنبيه: مستخدم جديد انضم',
-                '📨 رسالة واردة: "كيف الحال؟"',
-                '📤 تم إرسال رد: "بخير، شكراً!"'
-            ];
-            
-            let messageIndex = 0;
-            
-            // أول رسالة فورية
-            setTimeout(() => {
-                appendToTerminal('🤖 البوت يعمل الآن!', 'bot-message');
-                appendToTerminal('📲 رمز QR للربط:', 'info');
-                appendToTerminal('██████████████████████████████████', 'bot-qr');
-                appendToTerminal('🔗 رابط الربط: https://wa.me/qr/XXXXXXXXXX', 'info');
-            }, 1000);
-            
-            // رسائل دورية
-            botInterval = setInterval(() => {
-                if (messageIndex < botMessages.length) {
-                    const msg = botMessages[messageIndex];
-                    if (msg.includes('QR') || msg.includes('ربط')) {
-                        appendToTerminal(msg, 'bot-qr');
-                    } else if (msg.includes('رسالة') || msg.includes('رد')) {
-                        appendToTerminal(msg, 'bot-message');
-                    } else {
-                        appendToTerminal(msg, 'output');
-                    }
-                    messageIndex++;
-                } else {
-                    // رسائل عشوائية بعد انتهاء القائمة
-                    const randomMsgs = [
-                        '📩 رسالة جديدة من واتساب: "السلام عليكم"',
-                        '📤 تم إرسال رد: "وعليكم السلام ورحمة الله"',
-                        '🔄 جاري تحديث قاعدة البيانات...',
-                        '✅ تم تحديث 5 محادثات',
-                        '🔔 إشعار: تم ربط البوت بنجاح',
-                        '📊 عدد المستخدمين: 42',
-                        '💾 جاري حفظ السجلات...'
-                    ];
-                    const randomMsg = randomMsgs[Math.floor(Math.random() * randomMsgs.length)];
-                    if (randomMsg.includes('رسالة') || randomMsg.includes('رد')) {
-                        appendToTerminal(randomMsg, 'bot-message');
-                    } else {
-                        appendToTerminal(randomMsg, 'output');
-                    }
-                }
-            }, 5000);
-        }
-
-        // إيقاف البوت
-        function stopBotSimulation() {
-            if (botInterval) {
-                clearInterval(botInterval);
-                botInterval = null;
-            }
-            isBotRunning = false;
-            appendToTerminal('⏹️ تم إيقاف البوت', 'error');
         }
 
         // فتح صفحة السيرفر
@@ -811,44 +820,32 @@
             currentServerId = id;
             const server = servers.find(s => s.id === id);
             if (!server) return;
-            
+
+            currentBotId = server.username;
             serverPageTitle.innerHTML = `<i class="fas fa-server"></i> ${server.name} (${server.username})`;
             uploadedFiles = [...server.files];
             renderFiles();
             mainView.style.display = 'none';
             serverPage.classList.add('active');
             goToStep(0);
-            
-            // تنظيف التيرمنال
+
             terminalOutput.innerHTML = '';
-            appendToTerminal(`السيرفر جاهز: ${server.name}`, 'info');
-            appendToTerminal(`@${server.username}`, 'info');
-            appendToTerminal('---', 'info');
-            
-            // تحديث عنوان التيرمنال
+            appendToTerminal(`السيرفر جاهز: ${server.name}`, 'bot-info');
+            appendToTerminal(`@${server.username}`, 'bot-info');
+            appendToTerminal('---', 'bot-info');
+
             terminalTitle.textContent = `bash — ${server.username}@server:~/bot`;
-            
-            startStatus.textContent = '';
-            libsStatus.textContent = '';
-            
-            // إذا كان السيرفر شغال، بدء المحاكاة
-            if (server.status === 'online') {
-                setTimeout(() => {
-                    startBotSimulation();
-                }, 500);
-            }
+            startStatus.textContent = server.status === 'online' ? '✅ السيرفر يعمل' : '⏹️ السيرفر متوقف';
+
+            socket.emit('register-bot', server.username);
         };
 
         // رجوع للرئيسية
         backToMainBtn.addEventListener('click', () => {
-            if (botInterval) {
-                clearInterval(botInterval);
-                botInterval = null;
-            }
-            isBotRunning = false;
             serverPage.classList.remove('active');
             mainView.style.display = 'block';
             currentServerId = null;
+            currentBotId = null;
         });
 
         // عرض الملفات
@@ -861,7 +858,8 @@
             uploadedFiles.forEach(f => {
                 const span = document.createElement('span');
                 span.className = 'file-item';
-                span.innerHTML = `<i class="fas fa-file"></i> ${f} <i class="fas fa-times" style="cursor:pointer; color:#ef9a9a; margin-right:8px;" onclick="removeFile('${f}')"></i>`;
+                span.innerHTML =
+                    `<i class="fas fa-file"></i> ${f} <i class="fas fa-times" style="cursor:pointer; color:#ef9a9a; margin-right:8px;" onclick="removeFile('${f}')"></i>`;
                 fileList.appendChild(span);
             });
         }
@@ -876,15 +874,33 @@
 
         // رفع ملفات
         function handleFileUpload(files) {
+            const server = servers.find(s => s.id === currentServerId);
+            if (!server) return;
+
+            const formData = new FormData();
             for (let f of files) {
+                formData.append('files', f);
                 if (!uploadedFiles.includes(f.name)) {
                     uploadedFiles.push(f.name);
                 }
             }
-            renderFiles();
-            const server = servers.find(s => s.id === currentServerId);
-            if (server) server.files = [...uploadedFiles];
-            appendToTerminal(`📁 تم رفع الملف: ${files[0].name}`, 'output');
+            formData.append('botId', server.username);
+
+            fetch('http://localhost:3000/api/bot/upload', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        appendToTerminal(`✅ تم رفع ${data.files.length} ملف`, 'bot-success');
+                        server.files = [...uploadedFiles];
+                        renderFiles();
+                    }
+                })
+                .catch(err => {
+                    appendToTerminal(`❌ خطأ في الرفع: ${err.message}`, 'bot-error');
+                });
         }
 
         uploadFileBtn.addEventListener('click', () => fileInput.click());
@@ -937,38 +953,64 @@
         step2Next.addEventListener('click', () => goToStep(3));
         step3Prev.addEventListener('click', () => goToStep(2));
 
+        // ============= تشغيل وإيقاف السيرفر =============
+
         // تشغيل السيرفر
-        startServerBtn.addEventListener('click', () => {
+        startServerBtn.addEventListener('click', async () => {
             const server = servers.find(s => s.id === currentServerId);
             if (!server) return;
-            
+
             if (server.status === 'online') {
                 startStatus.innerHTML = '⚠️ السيرفر يعمل بالفعل';
                 return;
             }
-            
+
             startStatus.textContent = '⏳ جاري تشغيل السيرفر...';
-            
-            setTimeout(() => {
-                server.status = 'online';
-                startStatus.innerHTML = '✅ السيرفر يعمل بنجاح!';
-                renderServers();
-                
-                // بدء محاكاة البوت
-                startBotSimulation();
-                
-                // إظهار رسالة في التيرمنال
-                appendToTerminal('🚀 تم تشغيل البوت بنجاح', 'output');
-                appendToTerminal('📲 جاري تحميل رمز QR...', 'info');
-                
-                setTimeout(() => {
-                    appendToTerminal('📲 رمز QR:', 'info');
-                    appendToTerminal('██████████████████████████████████', 'bot-qr');
-                    appendToTerminal('🔗 رابط الربط: https://wa.me/qr/BOT123456', 'info');
-                    appendToTerminal('✅ البوت جاهز للاستخدام', 'bot-message');
-                }, 1500);
-                
-            }, 2000);
+
+            try {
+                const response = await fetch('http://localhost:3000/api/bot/start', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        botId: server.username,
+                        socketId: socket.id
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    startStatus.innerHTML = '✅ جاري تشغيل البوت... انتظر التوصيل';
+                    socket.emit('register-bot', server.username);
+                } else {
+                    startStatus.innerHTML = `❌ ${data.error}`;
+                }
+            } catch (error) {
+                startStatus.innerHTML = `❌ خطأ: ${error.message}`;
+            }
+        });
+
+        // إيقاف السيرفر
+        stopServerBtn.addEventListener('click', async () => {
+            const server = servers.find(s => s.id === currentServerId);
+            if (!server) return;
+
+            try {
+                const response = await fetch('http://localhost:3000/api/bot/stop', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ botId: server.username })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    startStatus.innerHTML = '⏹️ تم إيقاف السيرفر';
+                    server.status = 'offline';
+                    renderServers();
+                    appendToTerminal('⏹️ تم إيقاف البوت', 'bot-error');
+                }
+            } catch (error) {
+                startStatus.innerHTML = `❌ خطأ: ${error.message}`;
+            }
         });
 
         // تثبيت المكتبات
@@ -977,116 +1019,100 @@
                 libsStatus.textContent = '⏳ جاري التثبيت التلقائي...';
                 setTimeout(() => {
                     libsStatus.textContent = '✅ تم تثبيت جميع المكتبات تلقائياً';
-                    appendToTerminal('📦 تم تثبيت المكتبات تلقائياً', 'output');
-                    appendToTerminal('✅ whatsapp-web.js@latest', 'output');
-                    appendToTerminal('✅ qrcode@latest', 'output');
-                    appendToTerminal('✅ @whiskey/repl@latest', 'output');
+                    appendToTerminal('📦 تم تثبيت المكتبات تلقائياً', 'bot-success');
+                    appendToTerminal('✅ whatsapp-web.js@latest', 'bot-success');
+                    appendToTerminal('✅ qrcode@latest', 'bot-success');
                 }, 2000);
             } else if (manualLibs.checked) {
                 libsStatus.textContent = '📦 اخترت التثبيت اليدوي. استخدم Terminal';
-                appendToTerminal('🛠️ التثبيت اليدوي: استخدم npm install package-name', 'info');
-                appendToTerminal('📝 مثال: npm install whatsapp-web.js', 'info');
+                appendToTerminal('🛠️ التثبيت اليدوي: استخدم npm install package-name', 'bot-info');
             } else {
                 libsStatus.textContent = '⚠️ يرجى اختيار طريقة التثبيت.';
             }
         });
 
-        // إرسال أوامر Terminal
+        // ============= أوامر Terminal =============
         sendCommandBtn.addEventListener('click', () => {
             const cmd = terminalInput.value.trim();
             if (!cmd) return;
-            
-            // عرض الأمر
+
             const promptLine = document.createElement('div');
             promptLine.innerHTML = `<span class="prompt">$</span> <span class="command">${cmd}</span>`;
             terminalOutput.appendChild(promptLine);
             terminalOutput.scrollTop = terminalOutput.scrollHeight;
-            
-            // محاكاة الرد
+
             setTimeout(() => {
                 if (cmd.includes('npm install')) {
                     const packageName = cmd.replace('npm install', '').trim() || 'package';
-                    appendToTerminal(`📦 جاري تثبيت ${packageName}...`, 'info');
+                    appendToTerminal(`📦 جاري تثبيت ${packageName}...`, 'bot-info');
                     setTimeout(() => {
-                        appendToTerminal(`✅ تم تثبيت ${packageName} بنجاح`, 'output');
+                        appendToTerminal(`✅ تم تثبيت ${packageName} بنجاح`, 'bot-success');
                     }, 1000);
-                } else if (cmd.includes('help') || cmd === '?') {
-                    appendToTerminal('📚 الأوامر المتاحة:', 'info');
-                    appendToTerminal('  npm install <package>  - تثبيت مكتبة', 'output');
-                    appendToTerminal('  start                  - تشغيل البوت', 'output');
-                    appendToTerminal('  status                 - عرض حالة السيرفر', 'output');
-                    appendToTerminal('  stop                   - إيقاف البوت', 'output');
-                    appendToTerminal('  help                   - عرض هذه المساعدة', 'output');
-                } else if (cmd === 'start') {
-                    appendToTerminal('🚀 جاري تشغيل البوت...', 'info');
-                    setTimeout(() => {
-                        const server = servers.find(s => s.id === currentServerId);
-                        if (server) {
-                            server.status = 'online';
-                            renderServers();
-                            startBotSimulation();
-                            appendToTerminal('✅ تم تشغيل البوت بنجاح', 'output');
-                            appendToTerminal('شغال:', 'info');
-                            appendToTerminal('██████████████████████████████████', 'bot-qr');
-                        }
-                    }, 1000);
+                } else if (cmd === 'start' || cmd === 'run') {
+                    startServerBtn.click();
                 } else if (cmd === 'stop') {
-                    appendToTerminal('⏹️ جاري إيقاف البوت...', 'info');
-                    setTimeout(() => {
-                        const server = servers.find(s => s.id === currentServerId);
-                        if (server) {
-                            server.status = 'offline';
-                            renderServers();
-                            stopBotSimulation();
-                            appendToTerminal('✅ تم إيقاف البوت', 'error');
-                        }
-                    }, 500);
+                    stopServerBtn.click();
                 } else if (cmd === 'status') {
                     const server = servers.find(s => s.id === currentServerId);
-                    appendToTerminal(`📊 حالة السيرفر: ${server ? server.status : 'غير معروف'}`, 'info');
-                    if (server && server.status === 'online') {
-                        appendToTerminal('✅ البوت يعمل بشكل طبيعي', 'output');
-                        appendToTerminal('📱 متصل بالواتساب', 'output');
-                        appendToTerminal('👥 عدد المستخدمين: 42', 'output');
-                    } else {
-                        appendToTerminal('شغال  ', 'error');
-                    }
+                    appendToTerminal(`📊 حالة السيرفر: ${server ? server.status : 'غير معروف'}`, 'bot-info');
                 } else if (cmd === 'clear' || cmd === 'cls') {
                     terminalOutput.innerHTML = '';
-                    appendToTerminal('🧹 تم مسح الشاشة', 'info');
+                    appendToTerminal('🧹 تم مسح الشاشة', 'bot-info');
+                } else if (cmd === 'help') {
+                    appendToTerminal('📚 الأوامر المتاحة:', 'bot-info');
+                    appendToTerminal('  start    - تشغيل البوت', 'bot-info');
+                    appendToTerminal('  stop     - إيقاف البوت', 'bot-info');
+                    appendToTerminal('  status   - عرض حالة السيرفر', 'bot-info');
+                    appendToTerminal('  clear    - مسح الشاشة', 'bot-info');
+                    appendToTerminal('  help     - عرض هذه المساعدة', 'bot-info');
                 } else {
-                    appendToTerminal(`~$:` ${cmd}`, 'output');
+                    appendToTerminal(`✅ تم تنفيذ الأمر: ${cmd}`, 'bot-success');
                 }
                 terminalOutput.scrollTop = terminalOutput.scrollHeight;
             }, 300);
-            
+
             terminalInput.value = '';
-            terminalOutput.scrollTop = terminalOutput.scrollHeight;
         });
 
-        // Enter في حقل التيرمنال
         terminalInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 sendCommandBtn.click();
             }
         });
 
-        // تبديل حالة السيرفر
+        // ============= تبديل حالة السيرفر =============
         window.toggleStatus = function(id) {
             const server = servers.find(s => s.id === id);
             if (server) {
-                server.status = server.status === 'online' ? 'offline' : 'online';
-                if (server.status === 'offline' && currentServerId === id) {
-                    stopBotSimulation();
+                if (server.status === 'online') {
+                    fetch('http://localhost:3000/api/bot/stop', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ botId: server.username })
+                        })
+                        .then(() => {
+                            server.status = 'offline';
+                            renderServers();
+                        });
+                } else {
+                    fetch('http://localhost:3000/api/bot/start', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                botId: server.username,
+                                socketId: socket.id
+                            })
+                        })
+                        .then(() => {
+                            server.status = 'online';
+                            renderServers();
+                            socket.emit('register-bot', server.username);
+                        });
                 }
-                if (server.status === 'online' && currentServerId === id) {
-                    startBotSimulation();
-                }
-                renderServers();
             }
         };
 
-        // إنشاء سيرفر جديد
+        // ============= إنشاء سيرفر جديد =============
         createServerBtn.addEventListener('click', () => {
             createModal.classList.add('active');
             serverNameInput.value = '';
@@ -1094,33 +1120,80 @@
         });
 
         cancelModalBtn.addEventListener('click', () => createModal.classList.remove('active'));
-        confirmCreateBtn.addEventListener('click', () => {
+
+        confirmCreateBtn.addEventListener('click', async () => {
             const name = serverNameInput.value.trim();
             const user = serverUserInput.value.trim();
             if (!name || !user) {
                 alert('يرجى إدخال اسم السيرفر واسم المستخدم');
                 return;
             }
-            const newServer = {
-                id: Date.now(),
-                name,
-                username: user,
-                status: 'offline',
-                files: []
-            };
-            servers.push(newServer);
-            renderServers();
-            createModal.classList.remove('active');
-            openServer(newServer.id);
+
+            try {
+                const response = await fetch('http://localhost:3000/api/bot/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        botId: user,
+                        name: name,
+                        username: user
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    const newServer = {
+                        id: Date.now().toString(),
+                        name: data.name,
+                        username: data.username,
+                        status: 'offline',
+                        files: []
+                    };
+                    servers.push(newServer);
+                    renderServers();
+                    createModal.classList.remove('active');
+                    openServer(newServer.id);
+                    appendToTerminal(`✅ تم إنشاء السيرفر: ${name}`, 'bot-success');
+                } else {
+                    alert('خطأ في إنشاء السيرفر');
+                }
+            } catch (error) {
+                alert(`خطأ: ${error.message}`);
+            }
         });
 
-        // عرض سيرفراتي
-        myServersBtn.addEventListener('click', () => {
-            if (botInterval) {
-                clearInterval(botInterval);
-                botInterval = null;
+        // ============= تحميل البوتات =============
+        async function loadBots() {
+            try {
+                const response = await fetch('http://localhost:3000/api/bots');
+                const bots = await response.json();
+                bots.forEach(bot => {
+                    const exists = servers.find(s => s.username === bot.id);
+                    if (!exists) {
+                        servers.push({
+                            id: Date.now().toString() + Math.random().toString(36),
+                            name: bot.name || bot.id,
+                            username: bot.id,
+                            status: bot.status || 'offline',
+                            files: bot.files || []
+                        });
+                    }
+                });
+                renderServers();
+            } catch (error) {
+                console.log('⚠️ لا يمكن تحميل البوتات من الخادم');
+                if (servers.length === 0) {
+                    servers = [
+                        { id: '1', name: 'بوت التسويق', username: 'marketing_bot', status: 'offline', files: ['bot.js'] },
+                        { id: '2', name: 'بوت الدعم', username: 'support_bot', status: 'offline', files: ['app.js'] }
+                    ];
+                    renderServers();
+                }
             }
-            isBotRunning = false;
+        }
+
+        // ============= عرض سيرفراتي =============
+        myServersBtn.addEventListener('click', () => {
             if (serverPage.classList.contains('active')) {
                 serverPage.classList.remove('active');
                 mainView.style.display = 'block';
@@ -1130,9 +1203,233 @@
             }
         });
 
-        // بداية
-        renderServers();
-        console.log('🚀منصه سبارك');
+        // ============= بداية التشغيل =============
+        setTimeout(loadBots, 1000);
+        console.log('🚀 منصة استضافة بوتات واتساب جاهزة!');
+        console.log('⚠️ تأكد من تشغيل الخادم الخلفي على http://localhost:3000');
+    </script>
+
+    <!-- ============================================================ -->
+    <!-- ============== SERVER.JS (Backend) ============== -->
+    <!-- ============================================================ -->
+    <script>
+        // هذا الكود يعمل كخادم خلفي (Backend) باستخدام Node.js
+        // لتنفيذه: احفظ هذا الملف كـ server.js وشغله بـ node server.js
+
+        const express = require('express');
+        const http = require('http');
+        const socketIo = require('socket.io');
+        const cors = require('cors');
+        const multer = require('multer');
+        const fs = require('fs-extra');
+        const path = require('path');
+        const { Client, LocalAuth } = require('whatsapp-web.js');
+
+        const app = express();
+        const server = http.createServer(app);
+        const io = socketIo(server, {
+            cors: { origin: "*", methods: ["GET", "POST"] }
+        });
+
+        const BOTS_DIR = path.join(__dirname, 'bots');
+        fs.ensureDirSync(BOTS_DIR);
+
+        app.use(cors());
+        app.use(express.json());
+        app.use(express.static(__dirname));
+
+        const storage = multer.diskStorage({
+            destination: (req, file, cb) => {
+                const botId = req.body.botId || 'temp';
+                const botDir = path.join(BOTS_DIR, botId);
+                fs.ensureDirSync(botDir);
+                cb(null, botDir);
+            },
+            filename: (req, file, cb) => cb(null, file.originalname)
+        });
+        const upload = multer({ storage });
+
+        const activeBots = new Map();
+
+        class BotManager {
+            constructor(botId, socketId) {
+                this.botId = botId;
+                this.socketId = socketId;
+                this.client = null;
+                this.isRunning = false;
+                this.botDir = path.join(BOTS_DIR, botId);
+                this.sessionDir = path.join(this.botDir, 'session');
+                this.logs = [];
+            }
+
+            addLog(message, type = 'info') {
+                const timestamp = new Date().toLocaleTimeString();
+                this.logs.push({ timestamp, message, type });
+                io.to(this.socketId).emit('bot-log', { timestamp, message, type });
+                console.log(`[${this.botId}] ${message}`);
+            }
+
+            async start() {
+                if (this.isRunning) {
+                    this.addLog('⚠️ البوت يعمل بالفعل', 'error');
+                    return;
+                }
+
+                this.addLog('🚀 جاري تشغيل البوت...', 'info');
+                this.addLog('📱 جاري تهيئة عميل واتساب...', 'info');
+
+                try {
+                    this.client = new Client({
+                        authStrategy: new LocalAuth({ dataPath: this.sessionDir }),
+                        puppeteer: { headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] }
+                    });
+
+                    this.client.on('qr', (qr) => {
+                        this.addLog('📲 رمز QR:', 'qr');
+                        this.addLog(qr, 'qr');
+                        io.to(this.socketId).emit('bot-qr', qr);
+                    });
+
+                    this.client.on('authenticated', () => {
+                        this.addLog('✅ تم التوثيق بنجاح!', 'success');
+                    });
+
+                    this.client.on('auth_failure', (msg) => {
+                        this.addLog(`❌ فشل التوثيق: ${msg}`, 'error');
+                    });
+
+                    this.client.on('ready', () => {
+                        this.isRunning = true;
+                        this.addLog('✅ البوت جاهز ويعمل!', 'success');
+                        this.addLog(`👤 رقم البوت: ${this.client.info.wid.user}`, 'info');
+                        io.to(this.socketId).emit('bot-ready', {
+                            wid: this.client.info.wid.user,
+                            name: this.client.info.pushname
+                        });
+                    });
+
+                    this.client.on('message', async (message) => {
+                        this.addLog(`📩 رسالة واردة من ${message.from}: ${message.body}`, 'message');
+                        if (message.body.toLowerCase() === 'ping') {
+                            await message.reply('pong 🏓');
+                            this.addLog(`📤 تم إرسال رد: pong 🏓`, 'message');
+                        }
+                    });
+
+                    this.client.on('disconnected', (reason) => {
+                        this.isRunning = false;
+                        this.addLog(`🔴 تم قطع الاتصال: ${reason}`, 'error');
+                    });
+
+                    await this.client.initialize();
+                    this.addLog('✅ تم تشغيل البوت بنجاح!', 'success');
+
+                } catch (error) {
+                    this.addLog(`❌ خطأ: ${error.message}`, 'error');
+                }
+            }
+
+            async stop() {
+                if (!this.isRunning) {
+                    this.addLog('⚠️ البوت متوقف', 'error');
+                    return;
+                }
+                this.addLog('⏹️ جاري إيقاف البوت...', 'info');
+                try {
+                    if (this.client) {
+                        await this.client.destroy();
+                        this.client = null;
+                    }
+                    this.isRunning = false;
+                    this.addLog('✅ تم إيقاف البوت', 'success');
+                } catch (error) {
+                    this.addLog(`❌ خطأ: ${error.message}`, 'error');
+                }
+            }
+
+            getStatus() {
+                return { botId: this.botId, isRunning: this.isRunning, logs: this.logs.slice(-100) };
+            }
+        }
+
+        // API Routes
+        app.post('/api/bot/create', (req, res) => {
+            const { botId, name, username } = req.body;
+            if (!botId || !name) return res.status(400).json({ error: 'بيانات ناقصة' });
+            const botDir = path.join(BOTS_DIR, botId);
+            fs.ensureDirSync(botDir);
+            fs.ensureDirSync(path.join(botDir, 'session'));
+            res.json({ success: true, botId, name, username });
+        });
+
+        app.post('/api/bot/upload', upload.array('files'), (req, res) => {
+            const { botId } = req.body;
+            if (!botId) return res.status(400).json({ error: 'botId مطلوب' });
+            const files = req.files.map(f => f.originalname);
+            res.json({ success: true, botId, files });
+        });
+
+        app.post('/api/bot/start', (req, res) => {
+            const { botId, socketId } = req.body;
+            if (!botId || !socketId) return res.status(400).json({ error: 'بيانات ناقصة' });
+            const botDir = path.join(BOTS_DIR, botId);
+            if (!fs.existsSync(botDir)) return res.status(404).json({ error: 'البوت غير موجود' });
+
+            const botManager = new BotManager(botId, socketId);
+            activeBots.set(botId, botManager);
+            botManager.start();
+            res.json({ success: true, botId, message: 'جاري تشغيل البوت...' });
+        });
+
+        app.post('/api/bot/stop', (req, res) => {
+            const { botId } = req.body;
+            if (!botId) return res.status(400).json({ error: 'botId مطلوب' });
+            const botManager = activeBots.get(botId);
+            if (!botManager) return res.status(404).json({ error: 'البوت غير موجود' });
+            botManager.stop();
+            res.json({ success: true, botId, message: 'جاري إيقاف البوت...' });
+        });
+
+        app.get('/api/bot/status/:botId', (req, res) => {
+            const { botId } = req.params;
+            const botManager = activeBots.get(botId);
+            if (!botManager) return res.status(404).json({ error: 'البوت غير موجود' });
+            res.json(botManager.getStatus());
+        });
+
+        app.get('/api/bots', (req, res) => {
+            const bots = [];
+            const dirs = fs.readdirSync(BOTS_DIR);
+            dirs.forEach(dir => {
+                const botDir = path.join(BOTS_DIR, dir);
+                if (fs.statSync(botDir).isDirectory()) {
+                    const files = fs.readdirSync(botDir).filter(f => f !== 'session');
+                    const isRunning = activeBots.has(dir) && activeBots.get(dir).isRunning;
+                    bots.push({ id: dir, name: dir, files, status: isRunning ? 'online' : 'offline' });
+                }
+            });
+            res.json(bots);
+        });
+
+        // WebSocket
+        io.on('connection', (socket) => {
+            console.log('🟢 عميل متصل:', socket.id);
+            socket.on('register-bot', (botId) => {
+                const botManager = activeBots.get(botId);
+                if (botManager) {
+                    botManager.socketId = socket.id;
+                    botManager.logs.forEach(log => socket.emit('bot-log', log));
+                }
+            });
+            socket.on('disconnect', () => console.log('🔴 عميل غير متصل:', socket.id));
+        });
+
+        const PORT = 3000;
+        server.listen(PORT, () => {
+            console.log(`🚀 الخادم على http://localhost:${PORT}`);
+            console.log(`📁 مجلد البوتات: ${BOTS_DIR}`);
+            console.log('✅ المنصة جاهزة!');
+        });
     </script>
 </body>
 </html>
