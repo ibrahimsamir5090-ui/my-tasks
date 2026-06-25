@@ -1049,13 +1049,13 @@
                         appendToTerminal('📱 متصل بالواتساب', 'output');
                         appendToTerminal('👥 عدد المستخدمين: 42', 'output');
                     } else {
-                        appendToTerminal('⏹️ البوت متوقف', 'error');
+                        appendToTerminal('شغال  ', 'error');
                     }
                 } else if (cmd === 'clear' || cmd === 'cls') {
                     terminalOutput.innerHTML = '';
                     appendToTerminal('🧹 تم مسح الشاشة', 'info');
                 } else {
-                    appendToTerminal(`✅ تم تنفيذ الأمر: ${cmd}`, 'output');
+                    appendToTerminal(`~$:` ${cmd}`, 'output');
                 }
                 terminalOutput.scrollTop = terminalOutput.scrollHeight;
             }, 300);
@@ -1132,7 +1132,7 @@
 
         // بداية
         renderServers();
-        console.log('🚀 موقع استضافة بوتات واتساب جاهز!');
+        console.log('🚀منصه سبارك');
     </script>
 </body>
 </html>
